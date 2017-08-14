@@ -9,10 +9,10 @@ import java.util.List;
 public class Seat {
 
     private int seatNo;                         //座位号
-    private String userName;                    //用户名
-    private float gold;                         //金币
+    private int userId;                         //用户名
     private List<Integer> cards;                //牌
-    private float score;                        //输赢分数
+    private List<Integer> initialCards;         //初始牌
+    private int score;                          //输赢分数
     private String areaString;                  //地区
     private boolean isRobot;                    //是否托管
     private boolean ready;                      //准备
@@ -26,20 +26,12 @@ public class Seat {
         this.seatNo = seatNo;
     }
 
-    public String getUserName() {
-        return userName;
+    public int getUserId() {
+        return userId;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public float getGold() {
-        return gold;
-    }
-
-    public void setGold(float gold) {
-        this.gold = gold;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public List<Integer> getCards() {
@@ -50,11 +42,19 @@ public class Seat {
         this.cards = cards;
     }
 
-    public float getScore() {
+    public List<Integer> getInitialCards() {
+        return initialCards;
+    }
+
+    public void setInitialCards(List<Integer> initialCards) {
+        this.initialCards = initialCards;
+    }
+
+    public int getScore() {
         return score;
     }
 
-    public void setScore(float score) {
+    public void setScore(int score) {
         this.score = score;
     }
 
@@ -88,5 +88,12 @@ public class Seat {
 
     public void setCompleted(boolean completed) {
         this.completed = completed;
+    }
+
+    public void clear() {
+        initialCards.clear();
+        cards.clear();
+        ready = false;
+        completed = false;
     }
 }

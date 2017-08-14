@@ -8,25 +8,25 @@ import java.util.List;
  */
 public class OperationHistory {
 
-    private String userName;
+    private int userId;
     private OperationHistoryType historyType;
     private List<Integer> cards;
 
     public OperationHistory() {
     }
 
-    public OperationHistory(String userName, OperationHistoryType historyType, List<Integer> cards) {
-        this.userName = userName;
+    public OperationHistory(int userId, OperationHistoryType historyType, List<Integer> cards) {
+        this.userId = userId;
         this.historyType = historyType;
         this.cards = cards;
     }
 
-    public String getUserName() {
-        return userName;
+    public int getUserId() {
+        return userId;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public OperationHistoryType getHistoryType() {

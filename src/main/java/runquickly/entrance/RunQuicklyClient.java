@@ -1,7 +1,7 @@
 package runquickly.entrance;
 
 import com.alibaba.fastjson.JSON;
-import com.google.protobuf.MessageLite;
+import com.google.protobuf.GeneratedMessageV3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import runquickly.mode.*;
@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.List;
 
 /**
  * Created date 2016/3/25
@@ -26,10 +25,9 @@ public class RunQuicklyClient implements Runnable {
     private final OutputStream os;
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private Socket s;
-    private String user;
+    private int userId;
     private RedisService redisService;
     private String roomNo;
-    private double score;
     private Boolean connect;
     private byte[] md5Key = "2704031cd4814eb2a82e47bd1d9042c6".getBytes();
 
@@ -58,21 +56,18 @@ public class RunQuicklyClient implements Runnable {
         response = GameBase.BaseConnection.newBuilder();
     }
 
-    public void send(MessageLite lite, String username) {
+    public void send(GeneratedMessageV3 messageV3, int userId) {
         try {
-            if (RunQuicklyTcpService.userClients.containsKey(username)) {
-                synchronized (RunQuicklyTcpService.userClients.get(username).os) {
-                    OutputStream os = RunQuicklyTcpService.userClients.get(username).os;
-                    String md5 = CoreStringUtils.md5(ByteUtils.addAll(md5Key, lite.toByteArray()), 32, false);
-                    int len = lite.toByteArray().length + md5.getBytes().length + 4;
-                    writeInt(os, len);
-                    writeString(os, md5);
-                    os.write(lite.toByteArray());
-                    logger.info("runquickly send:len=" + len + "user=" + username);
+            if (RunQuicklyTcpService.userClients.containsKey(userId)) {
+                synchronized (RunQuicklyTcpService.userClients.get(userId).os) {
+                    OutputStream os = RunQuicklyTcpService.userClients.get(userId).os;
+                    String md5 = CoreStringUtils.md5(ByteUtils.addAll(md5Key, messageV3.toByteArray()), 32, false);
+                    messageV3.sendTo(os, md5);
+                    logger.info("mahjong send:len=\n" + messageV3 + "\nuser=" + userId + "\n");
                 }
             }
         } catch (IOException e) {
-            logger.info("socket.server.sendMessage.fail.message" + username + e.getMessage());
+            logger.info("socket.server.sendMessage.fail.message" + userId + e.getMessage());
 //            client.close();
         }
     }
@@ -87,7 +82,7 @@ public class RunQuicklyClient implements Runnable {
             if (s != null) {
                 s.close();
             }
-            if (null != user) {
+            if (0 != userId) {
 //                exit();
             }
         } catch (IOException e1) {
@@ -113,19 +108,6 @@ public class RunQuicklyClient implements Runnable {
         return new String(bytes);
     }
 
-    private void writeInt(OutputStream stream, int value) throws IOException {
-        stream.write((value >>> 24) & 0xFF);
-        stream.write((value >>> 16) & 0xFF);
-        stream.write((value >>> 8) & 0xFF);
-        stream.write((value) & 0xFF);
-    }
-
-    private void writeString(OutputStream stream, String value) throws IOException {
-        byte[] bytes = value.getBytes();
-        writeInt(stream, bytes.length);
-        stream.write(bytes);
-    }
-
     @Override
     public void run() {
         try {
@@ -149,57 +131,54 @@ public class RunQuicklyClient implements Runnable {
                                 break;
                             }
                             RunQuickly.RoomCardIntoRequest intoRequest = RunQuickly.RoomCardIntoRequest.parseFrom(request.getData());
-                            user = intoRequest.getId();
+                            userId = intoRequest.getId();
                             roomNo = intoRequest.getRoomNo();
-                            RunQuicklyTcpService.userClients.put(user, this);
+                            RunQuicklyTcpService.userClients.put(userId, this);
                             RunQuickly.RoomCardIntoResponse.Builder intoResponseBuilder = RunQuickly.RoomCardIntoResponse.newBuilder();
                             if (redisService.exists("room" + roomNo)) {
                                 redisService.lock("lock_room" + roomNo);
                                 Room room = JSON.parseObject(redisService.getCache("room" + roomNo), Room.class);
-                                score = room.getBaseScore();
                                 //房间是否已存在当前用户，存在则为重连
                                 final boolean[] find = {false};
-                                room.getSeats().stream().filter(seat -> seat.getUserName().equals(user)).forEach(seat -> find[0] = true);
+                                room.getSeats().stream().filter(seat -> seat.getUserId() == userId).forEach(seat -> find[0] = true);
                                 if (!find[0]) {
                                     if (room.getCount() < room.getSeats().size()) {
-                                        User user = new User();
-                                        user.setUsername(this.user);
+                                        User user = new User(userId, "测试帐号");
                                         room.addSeat(user);
                                     } else {
                                         intoResponseBuilder.setError(GameBase.ErrorCode.COUNT_FULL);
                                         response.setOperationType(GameBase.OperationType.CONNECTION).setData(intoResponseBuilder.build().toByteString());
-                                        send(response.build(), user);
+                                        send(response.build(), userId);
                                         redisService.unlock("lock_room" + roomNo);
                                         break;
                                     }
                                 }
                                 response.setOperationType(GameBase.OperationType.ROOM_INFO).setData(intoResponseBuilder.build().toByteString());
-                                send(response.build(), user);
+                                send(response.build(), userId);
 
                                 RunQuickly.RoomSeatsInfo.Builder roomSeatsInfo = RunQuickly.RoomSeatsInfo.newBuilder();
                                 for (Seat seat1 : room.getSeats()) {
                                     RunQuickly.SeatResponse.Builder seatResponse = RunQuickly.SeatResponse.newBuilder();
                                     seatResponse.setSeatNo(seat1.getSeatNo());
-                                    seatResponse.setID(seat1.getUserName());
-                                    seatResponse.setGold(seat1.getGold());
+                                    seatResponse.setID(seat1.getUserId());
+                                    seatResponse.setScore(seat1.getScore());
                                     seatResponse.setIsReady(seat1.isReady());
                                     seatResponse.setAreaString(seat1.getAreaString());
                                     roomSeatsInfo.addSeats(seatResponse.build());
                                 }
                                 response.setOperationType(GameBase.OperationType.SEAT_INFO).setData(roomSeatsInfo.build().toByteString());
-                                send(response.build(), user);
+                                send(response.build(), userId);
 
                                 if (0 == room.getGameStatus().compareTo(GameStatus.PLAYING)) {
                                     RunQuickly.GameInfo.Builder gameInfo = RunQuickly.GameInfo.newBuilder().setGameStatus(RunQuickly.GameStatus.PLAYING);
-                                    gameInfo.setOperationUser(room.getSeats().get(room.getOperationSeat() - 1).getUserName());
+                                    gameInfo.setOperationUser(room.getSeats().get(room.getOperationSeat() - 1).getUserId());
                                     gameInfo.setLastOperationUser(room.getLastOperation());
                                     for (Seat seat1 : room.getSeats()) {
                                         RunQuickly.SeatGameInfo.Builder seatResponse = RunQuickly.SeatGameInfo.newBuilder();
-                                        seatResponse.setID(seat1.getUserName());
-                                        seatResponse.setScore(seat1.getScore());
+                                        seatResponse.setID(seat1.getUserId());
                                         seatResponse.setIsRobot(seat1.isRobot());
                                         if (null != seat1.getCards()) {
-                                            if (seat1.getUserName().equals(user)) {
+                                            if (seat1.getUserId() == userId) {
                                                 seatResponse.addAllCards(seat1.getCards());
                                             } else {
                                                 seatResponse.setCardsSize(seat1.getCards().size());
@@ -208,31 +187,30 @@ public class RunQuicklyClient implements Runnable {
                                         gameInfo.addSeats(seatResponse.build());
                                     }
                                     response.setOperationType(GameBase.OperationType.GAME_INFO).setData(gameInfo.build().toByteString());
-                                    send(response.build(), user);
+                                    send(response.build(), userId);
 
                                     //才开始的时候检测是否该当前玩家出牌
-                                    RunQuickly.RoundResponse roundResponse = RunQuickly.RoundResponse.newBuilder().setID(room.getSeats().get(room.getOperationSeat() - 1).getUserName()).build();
+                                    GameBase.RoundResponse roundResponse = GameBase.RoundResponse.newBuilder().setID(room.getSeats().get(room.getOperationSeat() - 1).getUserId()).build();
                                     response.setOperationType(GameBase.OperationType.ROUND).setData(roundResponse.toByteString());
-                                    send(response.build(), user);
+                                    send(response.build(), userId);
                                 }
                                 redisService.addCache("room" + roomNo, JSON.toJSONString(room));
                                 redisService.unlock("lock_room" + roomNo);
                             } else {
                                 intoResponseBuilder.setError(GameBase.ErrorCode.ROOM_NOT_EXIST);
                                 response.setOperationType(GameBase.OperationType.CONNECTION).setData(intoResponseBuilder.build().toByteString());
-                                send(response.build(), user);
+                                send(response.build(), userId);
                             }
                             break;
                         case READY:
-                            RunQuickly.BaseAction.Builder actionResponse = RunQuickly.BaseAction.newBuilder();
                             if (redisService.exists("room" + roomNo)) {
                                 redisService.lock("lock_room" + roomNo);
                                 Room room = JSON.parseObject(redisService.getCache("room" + roomNo), Room.class);
-                                room.getSeats().stream().filter(seat -> seat.getUserName().equals(user) && !seat.isReady()).forEach(seat -> {
+                                room.getSeats().stream().filter(seat -> seat.getUserId() == userId && !seat.isReady()).forEach(seat -> {
                                     seat.setReady(true);
-                                    response.setOperationType(GameBase.OperationType.READY).setData(RunQuickly.ReadyResponse.newBuilder().setID(seat.getUserName()).build().toByteString());
-                                    room.getSeats().stream().filter(seat1 -> RunQuicklyTcpService.userClients.containsKey(seat1.getUserName())).forEach(seat1 ->
-                                            RunQuicklyTcpService.userClients.get(seat1.getUserName()).send(response.build(), seat1.getUserName()));
+                                    response.setOperationType(GameBase.OperationType.READY).setData(GameBase.ReadyResponse.newBuilder().setID(seat.getUserId()).build().toByteString());
+                                    room.getSeats().stream().filter(seat1 -> RunQuicklyTcpService.userClients.containsKey(seat1.getUserId())).forEach(seat1 ->
+                                            RunQuicklyTcpService.userClients.get(seat1.getUserId()).send(response.build(), seat1.getUserId()));
                                 });
                                 boolean allReady = true;
                                 for (Seat seat : room.getSeats()) {
@@ -242,24 +220,23 @@ public class RunQuicklyClient implements Runnable {
                                     }
                                 }
                                 if (allReady && room.getCount() == room.getSeats().size()) {
+                                    room.setGameCount(room.getGameCount() + 1);
                                     room.setGameStatus(GameStatus.PLAYING);
                                     room.dealCard();
                                     //骰子
-                                    RunQuickly.DealCardResponse.Builder dealCard = RunQuickly.DealCardResponse.newBuilder();
-                                    dealCard.setFirstID(room.getSeats().get(room.getOperationSeat() - 1).getUserName());
-                                    actionResponse.setOperationId(GameBase.OperationId.DEAL_CARD);
-                                    response.setOperationType(GameBase.OperationType.ACTION);
-                                    room.getSeats().stream().filter(seat -> RunQuicklyTcpService.userClients.containsKey(seat.getUserName())).forEach(seat -> {
+                                    RunQuickly.StartResponse.Builder dealCard = RunQuickly.StartResponse.newBuilder();
+                                    dealCard.setFirstID(room.getSeats().get(room.getOperationSeat() - 1).getUserId());
+                                    response.setOperationType(GameBase.OperationType.START);
+                                    room.getSeats().stream().filter(seat -> RunQuicklyTcpService.userClients.containsKey(seat.getUserId())).forEach(seat -> {
                                         dealCard.clearCards();
                                         dealCard.addAllCards(seat.getCards());
-                                        actionResponse.setData(dealCard.build().toByteString());
-                                        response.setData(actionResponse.build().toByteString());
-                                        RunQuicklyTcpService.userClients.get(seat.getUserName()).send(response.build(), seat.getUserName());
+                                        response.setData(dealCard.build().toByteString());
+                                        RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.build(), seat.getUserId());
                                     });
 
-                                    RunQuickly.RoundResponse roundResponse = RunQuickly.RoundResponse.newBuilder().setID(room.getSeats().get(room.getOperationSeat() - 1).getUserName()).build();
+                                    GameBase.RoundResponse roundResponse = GameBase.RoundResponse.newBuilder().setID(room.getSeats().get(room.getOperationSeat() - 1).getUserId()).build();
                                     response.setOperationType(GameBase.OperationType.ROUND).setData(roundResponse.toByteString());
-                                    send(response.build(), user);
+                                    send(response.build(), userId);
                                 }
                                 redisService.addCache("room" + roomNo, JSON.toJSONString(room));
                             } else {
@@ -270,7 +247,7 @@ public class RunQuicklyClient implements Runnable {
                             if (redisService.exists("room" + roomNo)) {
                                 redisService.lock("lock_room" + roomNo);
                                 Room room = JSON.parseObject(redisService.getCache("room" + roomNo), Room.class);
-                                room.getSeats().stream().filter(seat -> seat.getUserName().equals(user) && !seat.isCompleted())
+                                room.getSeats().stream().filter(seat -> seat.getUserId() == userId && !seat.isCompleted())
                                         .forEach(seat -> seat.setCompleted(true));
                                 boolean allCompleted = true;
                                 for (Seat seat : room.getSeats()) {
@@ -288,15 +265,15 @@ public class RunQuicklyClient implements Runnable {
                             }
                             break;
                         case ACTION:
-                            RunQuickly.BaseAction actionRequest = RunQuickly.BaseAction.parseFrom(request.getData());
-                            actionResponse = RunQuickly.BaseAction.newBuilder();
+                            GameBase.BaseAction actionRequest = GameBase.BaseAction.parseFrom(request.getData());
+                            GameBase.BaseAction.Builder actionResponse = GameBase.BaseAction.newBuilder();
                             if (redisService.exists("room" + roomNo)) {
                                 redisService.lock("lock_room" + roomNo);
                                 Room room = JSON.parseObject(redisService.getCache("room" + roomNo), Room.class);
                                 switch (actionRequest.getOperationId()) {
                                     case PLAY_CARD:
                                         RunQuickly.PlayCardRequest playCardRequest = RunQuickly.PlayCardRequest.parseFrom(actionRequest.getData());
-                                        room.getSeats().stream().filter(seat -> seat.getUserName().equals(user)).forEach(seat -> {
+                                        room.getSeats().stream().filter(seat -> seat.getUserId() == userId).forEach(seat -> {
                                             if (seat.getCards().containsAll(playCardRequest.getCardList())) {
                                                 //判断该出牌的牌型
                                                 CardType cardType = null;
@@ -344,17 +321,28 @@ public class RunQuicklyClient implements Runnable {
                                                         }
                                                     }
                                                 }
-                                                room.getHistoryList().add(new OperationHistory(user, OperationHistoryType.PLAY_CARD, playCardRequest.getCardList()));
+                                                room.getHistoryList().add(new OperationHistory(userId, OperationHistoryType.PLAY_CARD, playCardRequest.getCardList()));
 
                                                 seat.getCards().removeAll(playCardRequest.getCardList());
                                                 RunQuickly.PlayCardResponse playCardResponse = RunQuickly.PlayCardResponse.newBuilder()
-                                                        .setID(seat.getUserName()).addAllCard(playCardRequest.getCardList()).build();
-                                                actionResponse.setOperationId(GameBase.OperationId.PLAY_CARD).setData(playCardResponse.toByteString());
+                                                        .setID(seat.getUserId()).addAllCard(playCardRequest.getCardList()).build();
+                                                actionResponse.setOperationId(GameBase.ActionId.PLAY_CARD).setData(playCardResponse.toByteString());
                                                 response.setOperationType(GameBase.OperationType.ACTION).setData(actionResponse.build().toByteString());
-                                                room.getSeats().stream().filter(seat1 -> RunQuicklyTcpService.userClients.containsKey(seat1.getUserName()))
-                                                        .forEach(seat1 -> RunQuicklyTcpService.userClients.get(seat1.getUserName()).send(response.build(), seat1.getUserName()));
+                                                room.getSeats().stream().filter(seat1 -> RunQuicklyTcpService.userClients.containsKey(seat1.getUserId()))
+                                                        .forEach(seat1 -> RunQuicklyTcpService.userClients.get(seat1.getUserId()).send(response.build(), seat1.getUserId()));
+
+                                                if (0 == seat.getCards().size()) {
+                                                    room.gameOver(response, redisService);
+                                                    return;
+                                                }
+
+                                                GameBase.RoundResponse roundResponse = GameBase.RoundResponse.newBuilder().setID(room.getSeats().get(room.getOperationSeat() - 1).getUserId()).build();
+                                                response.setOperationType(GameBase.OperationType.ROUND).setData(roundResponse.toByteString());
+                                                room.getSeats().stream().filter(seat1 -> RunQuicklyTcpService.userClients.containsKey(seat1.getUserId()))
+                                                        .forEach(seat1 -> RunQuicklyTcpService.userClients.get(seat1.getUserId()).send(response.build(), seat1.getUserId()));
+
                                             } else {
-                                                logger.warn("用户手中没有此牌" + user);
+                                                logger.warn("用户手中没有此牌" + userId);
                                             }
                                         });
                                         break;
@@ -371,14 +359,14 @@ public class RunQuicklyClient implements Runnable {
                                 redisService.lock("lock_room" + roomNo);
                                 Room room = JSON.parseObject(redisService.getCache("room" + roomNo), Room.class);
                                 for (OperationHistory operationHistory : room.getHistoryList()) {
-                                    RunQuickly.OperationHistory.Builder builder = RunQuickly.OperationHistory.newBuilder();
-                                    builder.setID(operationHistory.getUserName());
+                                    GameBase.OperationHistory.Builder builder = GameBase.OperationHistory.newBuilder();
+                                    builder.setID(operationHistory.getUserId());
                                     builder.addAllCard(operationHistory.getCards());
-                                    builder.setOperationId(GameBase.OperationId.PLAY_CARD);
+                                    builder.setOperationId(GameBase.ActionId.PLAY_CARD);
                                     replayResponse.addHistory(builder);
                                 }
                                 response.setOperationType(GameBase.OperationType.REPLAY).setData(replayResponse.build().toByteString());
-                                send(response.build(), user);
+                                send(response.build(), userId);
                                 redisService.unlock("lock_room" + roomNo);
                             }
                             break;
@@ -399,14 +387,4 @@ public class RunQuicklyClient implements Runnable {
         }
     }
 
-    private void gameOver(Room room) {
-        //TODO 计算比分
-        //删除该桌
-        redisService.delete("room" + roomNo);
-        redisService.lock("lock_room_nos" + roomNo);
-        List<String> roomNos = JSON.parseArray(redisService.getCache("room_nos"), String.class);
-        roomNos.remove(roomNo);
-        redisService.addCache("room_nos", JSON.toJSONString(roomNos), 86400);
-        redisService.unlock("lock_room_nos" + roomNo);
-    }
 }
