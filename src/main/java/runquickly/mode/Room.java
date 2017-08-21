@@ -14,11 +14,11 @@ import java.util.List;
  */
 public class Room {
 
-    private Double baseScore; //基础分
+    private int baseScore; //基础分
     private String roomNo;  //桌号
-    private List<Seat> seats;//座位
+    private List<Seat> seats = new ArrayList<>();//座位
     private int operationSeat;
-    private List<OperationHistory> historyList;
+    private List<OperationHistory> historyList = new ArrayList<>();
     private GameStatus gameStatus;
 
     private int lastOperation;
@@ -27,22 +27,13 @@ public class Room {
     private int count;//人数
     private int multiple;
     private int gameCount;
-    private List<Record> recordList;//战绩
+    private List<Record> recordList = new ArrayList<>();//战绩
 
-    public Room(Double baseScore, String roomNo, int gameTimes, int count) {
-        this.baseScore = baseScore;
-        this.roomNo = roomNo;
-        this.gameTimes = gameTimes;
-        this.count = count;
-        this.gameStatus = GameStatus.WAITING;
-        this.multiple = 1;
-    }
-
-    public Double getBaseScore() {
+    public int getBaseScore() {
         return baseScore;
     }
 
-    public void setBaseScore(Double baseScore) {
+    public void setBaseScore(int baseScore) {
         this.baseScore = baseScore;
     }
 
@@ -187,7 +178,7 @@ public class Room {
 
 
         //TODO 计算比分
-        RunQuickly.ResultResponse.Builder resultResponse = RunQuickly.ResultResponse.newBuilder();
+        RunQuickly.RunQuicklyResultResponse.Builder resultResponse = RunQuickly.RunQuicklyResultResponse.newBuilder();
         int winScore = 0;
         Seat winSeat = null;
 
@@ -202,7 +193,7 @@ public class Room {
                 }
                 score *= multiple;
                 winScore += score;
-                RunQuickly.Result result = RunQuickly.Result.newBuilder().setID(seat.getUserId())
+                RunQuickly.RunQuicklyResult result = RunQuickly.RunQuicklyResult.newBuilder().setID(seat.getUserId())
                         .addAllCards(seat.getCards()).setScore(0 - score).build();
                 resultResponse.addResult(result);
 
@@ -221,7 +212,7 @@ public class Room {
         if (null == winSeat) {
             return;
         }
-        RunQuickly.Result result = RunQuickly.Result.newBuilder().setID(winSeat.getUserId()).setScore(winScore).build();
+        RunQuickly.RunQuicklyResult result = RunQuickly.RunQuicklyResult.newBuilder().setID(winSeat.getUserId()).setScore(winScore).build();
         resultResponse.addResult(result);
         winSeat.setScore(winSeat.getScore() + winScore);
 
