@@ -2,11 +2,16 @@ package runquickly.mode;
 
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import org.slf4j.LoggerFactory;
 import runquickly.entrance.RunQuicklyTcpService;
 import runquickly.redis.RedisService;
+import runquickly.utils.HttpUtil;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Author pengyi
@@ -16,10 +21,12 @@ public class Room {
 
     private int baseScore; //基础分
     private String roomNo;  //桌号
+    private int roomOwner;
     private List<Seat> seats = new ArrayList<>();//座位
     private int operationSeat;
     private List<OperationHistory> historyList = new ArrayList<>();
     private GameStatus gameStatus;
+    private List<Integer> seatNos;
 
     private int lastOperation;
 
@@ -28,6 +35,7 @@ public class Room {
     private int multiple;
     private int gameCount;
     private List<Record> recordList = new ArrayList<>();//战绩
+    private int gameRules;
 
     public int getBaseScore() {
         return baseScore;
@@ -43,6 +51,14 @@ public class Room {
 
     public void setRoomNo(String roomNo) {
         this.roomNo = roomNo;
+    }
+
+    public int getRoomOwner() {
+        return roomOwner;
+    }
+
+    public void setRoomOwner(int roomOwner) {
+        this.roomOwner = roomOwner;
     }
 
     public List<Seat> getSeats() {
@@ -75,6 +91,14 @@ public class Room {
 
     public void setGameStatus(GameStatus gameStatus) {
         this.gameStatus = gameStatus;
+    }
+
+    public List<Integer> getSeatNos() {
+        return seatNos;
+    }
+
+    public void setSeatNos(List<Integer> seatNos) {
+        this.seatNos = seatNos;
     }
 
     public int getLastOperation() {
@@ -125,14 +149,26 @@ public class Room {
         this.recordList = recordList;
     }
 
+    public int getGameRules() {
+        return gameRules;
+    }
+
+    public void setGameRules(int gameRules) {
+        this.gameRules = gameRules;
+    }
+
     public void addSeat(User user) {
         Seat seat = new Seat();
         seat.setRobot(false);
         seat.setReady(false);
-        seat.setAreaString("");
+        seat.setAreaString(user.getArea());
+        seat.setHead(user.getHead());
+        seat.setNickname(user.getNickname());
+        seat.setSex(user.getSex().equals("MAN"));
         seat.setScore(0);
-        seat.setSeatNo(seats.size() + 1);
-        seat.setUserId(user.getId());
+        seat.setSeatNo(seatNos.get(0));
+        seatNos.remove(0);
+        seat.setUserId(user.getUserId());
         seats.add(seat);
     }
 
@@ -141,10 +177,11 @@ public class Room {
         if (operationSeat == 0) {
             List<Integer> surplusCards = Card.getAllCard();
             for (Seat seat : seats) {
+                seat.setReady(false);
                 List<Integer> cardList = new ArrayList<>();
                 for (int i = 0; i < 13; i++) {
                     int cardIndex = (int) (Math.random() * surplusCards.size());
-                    if (cardIndex < min) {
+                    if (cardIndex < min && 0 != cardIndex) {
                         min = cardIndex;
                         operationSeat = seat.getSeatNo();
                     }
@@ -154,7 +191,6 @@ public class Room {
                 seat.setCards(cardList);
                 seat.setInitialCards(cardList);
             }
-            operationSeat = 1;
         }
     }
 
@@ -174,7 +210,7 @@ public class Room {
         Record record = new Record();
         record.setMultiple(multiple);
         List<SeatRecord> seatRecords = new ArrayList<>();
-        record.setHistoryList(historyList);
+        record.getHistoryList().addAll(historyList);
 
 
         //TODO 计算比分
@@ -190,6 +226,8 @@ public class Room {
                     score = 30;
                 } else if (cardSize > 9) {
                     score = cardSize * 2;
+                } else {
+                    score = cardSize;
                 }
                 score *= multiple;
                 winScore += score;
@@ -199,8 +237,8 @@ public class Room {
 
                 SeatRecord seatRecord = new SeatRecord();
                 seatRecord.setUserId(seat.getUserId());
-                seatRecord.setInitialCards(seat.getInitialCards());
-                seatRecord.setCards(seat.getCards());
+                seatRecord.getInitialCards().addAll(seat.getInitialCards());
+                seatRecord.getCards().addAll(seat.getCards());
                 seatRecord.setWinOrLoce(0 - score);
                 seatRecords.add(seatRecord);
 
@@ -218,12 +256,12 @@ public class Room {
 
         SeatRecord seatRecord = new SeatRecord();
         seatRecord.setUserId(winSeat.getUserId());
-        seatRecord.setInitialCards(winSeat.getInitialCards());
-        seatRecord.setCards(winSeat.getCards());
+        seatRecord.getInitialCards().addAll(winSeat.getInitialCards());
+        seatRecord.getCards().addAll(winSeat.getCards());
         seatRecord.setWinOrLoce(winScore);
         seatRecords.add(seatRecord);
 
-        record.setSeatRecordList(seatRecords);
+        record.getSeatRecordList().addAll(seatRecords);
         recordList.add(record);
 
         response.setOperationType(GameBase.OperationType.RESULT).setData(resultResponse.build().toByteString());
@@ -234,37 +272,76 @@ public class Room {
 
         //结束房间
         if (gameCount == gameTimes) {
-
-//            Xingning.OverResponse.Builder over = Xingning.OverResponse.newBuilder();
-//
-//            for (Seat seat : seats) {
-//                //TODO 统计
-//                Xingning.SeatGameOver.Builder seatGameOver = Xingning.SeatGameOver.newBuilder()
-//                        .setID(seat.getUserId()).setMinggang(seat.getMinggang()).setAngang(seat.getAngang())
-//                        .setZimoCount(seat.getZimoCount()).setHuCount(seat.getHuCount()).setDianpaoCount(seat.getDianpaoCount());
-//                over.addGameOver(seatGameOver);
-//            }
-//
-//            response.setOperationType(GameBase.OperationType.OVER).setData(over.build().toByteString());
-//            seats.stream().filter(seat -> MahjongTcpService.userClients.containsKey(seat.getUserId()))
-//                    .forEach(seat -> MahjongTcpService.userClients.get(seat.getUserId()).send(response.build(), seat.getUserId()));
-
-            //删除该桌
-            redisService.delete("room" + roomNo);
-            redisService.lock("lock_room_nos" + roomNo);
-            List<String> roomNos = JSON.parseArray(redisService.getCache("room_nos"), String.class);
-            roomNos.remove(roomNo);
-            redisService.addCache("room_nos", JSON.toJSONString(roomNos), 86400);
-            redisService.unlock("lock_room_nos" + roomNo);
+            roomOver(response, redisService);
         }
     }
 
-    private void clear() {
+    public void roomOver(GameBase.BaseConnection.Builder response, RedisService redisService) {
+        RunQuickly.RunQuicklyResponse.Builder over = RunQuickly.RunQuicklyResponse.newBuilder();
 
+        for (Seat seat : seats) {
+            //TODO 统计
+            RunQuickly.RunQuicklySeatOver.Builder seatOver = RunQuickly.RunQuicklySeatOver.newBuilder()
+                    .setID(seat.getUserId()).setWinOrLose(seat.getScore());
+            over.addGameOver(seatOver);
+        }
+
+        StringBuilder people = new StringBuilder();
+
+        for (Seat seat : seats) {
+            people.append(",").append(seat.getUserId());
+            redisService.delete("reconnect" + seat.getUserId());
+            if (RunQuicklyTcpService.userClients.containsKey(seat.getUserId())) {
+                String uuid = UUID.randomUUID().toString().replace("-", "");
+                while (redisService.exists(uuid)) {
+                    uuid = UUID.randomUUID().toString().replace("-", "");
+                }
+                redisService.addCache("backkey" + uuid, seat.getUserId() + "", 1800);
+                over.setBackKey(uuid);
+                over.setDateTime(new Date().getTime());
+                response.setOperationType(GameBase.OperationType.OVER).setData(over.build().toByteString());
+                RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.build(), seat.getUserId());
+            }
+        }
+
+        List<TotalScore> totalScores = new ArrayList<>();
+        for (Seat seat : seats) {
+            TotalScore totalScore = new TotalScore();
+            totalScore.setHead(seat.getHead());
+            totalScore.setNickname(seat.getNickname());
+            totalScore.setUserId(seat.getUserId());
+            totalScore.setScore(seat.getScore());
+            totalScores.add(totalScore);
+        }
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("gameType", 1);
+        jsonObject.put("roomOwner", roomOwner);
+        jsonObject.put("people", people.toString().substring(1));
+        jsonObject.put("gameTotal", gameTimes);
+        jsonObject.put("gameCount", gameCount);
+        jsonObject.put("peopleCount", count);
+        jsonObject.put("roomNo", Integer.parseInt(roomNo));
+        jsonObject.put("gameData", JSON.toJSONString(recordList).getBytes());
+        jsonObject.put("scoreData", JSON.toJSONString(totalScores).getBytes());
+
+        ApiResponse apiResponse = JSON.parseObject(HttpUtil.urlConnectionByRsa("http://127.0.0.1:9999/api/gamerecord/create", jsonObject.toJSONString()), ApiResponse.class);
+        if (0 != apiResponse.getCode()) {
+            LoggerFactory.getLogger(this.getClass()).error("http://127.0.0.1:9999/api/gamerecord/create?" + jsonObject.toJSONString());
+        }
+
+        //删除该桌
+        redisService.delete("room" + roomNo);
+        redisService.delete("room_type" + roomNo);
+        roomNo = null;
+    }
+
+    private void clear() {
         historyList.clear();
         gameStatus = GameStatus.READYING;
+        operationSeat = 0;
         lastOperation = 0;
-        multiple = 0;
+        multiple = 1;
         seats.forEach(Seat::clear);
     }
 }

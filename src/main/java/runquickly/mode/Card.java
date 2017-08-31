@@ -2,6 +2,7 @@ package runquickly.mode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -20,18 +21,37 @@ public class Card {
     }
 
     public static List<Integer> getAllCard() {
-        return Arrays.asList(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-                103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115,
-                203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215,
-                303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315);
+        return new ArrayList<>(Arrays.asList(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
+                102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114,
+                202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214,
+                302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314));
     }
 
     public static CardType getCardType(List<Integer> cardList) {
-        List<Integer> cards = new ArrayList<>();
-        for (Integer integer : cardList) {
-            cards.add(integer % 100);
+        CardType cardType = getCardType(cardList, 1);
+        if (0 == CardType.ERROR.compareTo(cardType)) {
+            cardType = getCardType(cardList, 2);
         }
-        cards.sort(Integer::compareTo);
+        return cardType;
+    }
+
+    public static CardType getCardType(List<Integer> cardList, int times) {
+        List<Integer> cards = new ArrayList<>();
+        for (int integer : cardList) {
+            if (1 == times && 2 == integer % 100) {
+                cards.add(15);
+            } else if (2 == times && 14 == integer % 100) {
+                cards.add(1);
+            } else {
+                cards.add(integer % 100);
+            }
+        }
+        cards.sort(new Comparator<Integer>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                return o1.compareTo(o2);
+            }
+        });
         switch (cards.size()) {
             case 1:
                 return CardType.DANPAI;
@@ -56,7 +76,7 @@ public class Card {
                     return CardType.SANZHANG;
                 }
                 for (int i = 0; i < 3; i++) {
-                    if (cards.get(i).intValue() != cards.get(i + 1)) {
+                    if (cards.get(i) != cards.get(i + 1) - 1) {
                         return CardType.ERROR;
                     }
                 }
@@ -67,7 +87,7 @@ public class Card {
                     return CardType.SANZHANG;
                 }
                 for (int i = 0; i < 4; i++) {
-                    if (cards.get(i).intValue() != cards.get(i + 1)) {
+                    if (cards.get(i) != cards.get(i + 1) - 1) {
                         return CardType.ERROR;
                     }
                 }
@@ -83,8 +103,11 @@ public class Card {
                         && cards.get(0) == cards.get(4) - 2 && cards.get(0) == cards.get(5) - 2) {
                     return CardType.LIANDUI;
                 }
+                if (cards.get(0) == 3 && cards.get(1) == 3 && cards.get(2) == 14 && cards.get(3) == 14 && cards.get(4) == 15 && cards.get(5) == 15) {
+                    return CardType.LIANDUI;
+                }
                 for (int i = 0; i < 5; i++) {
-                    if (cards.get(i).intValue() != cards.get(i + 1)) {
+                    if (cards.get(i) != cards.get(i + 1) - 1) {
                         return CardType.ERROR;
                     }
                 }
@@ -94,7 +117,7 @@ public class Card {
             //顺子
             boolean shunzi = true;
             for (int i = 0; i < 5; i++) {
-                if (cards.get(i).intValue() != cards.get(i + 1)) {
+                if (cards.get(i) != cards.get(i + 1) - 1) {
                     shunzi = false;
                     break;
                 }
@@ -108,7 +131,7 @@ public class Card {
             List<Integer> dui = get_dui(cards);
             if (cards.size() - dui.size() < 2) {
                 for (int i = 0; i < dui.size() - 2; i += 2) {
-                    if (dui.get(i).intValue() == dui.get(i + 1) && dui.get(i) == dui.get(i + 2) - 1) {
+                    if (dui.get(i).intValue() != dui.get(i + 1) || dui.get(i) != dui.get(i + 2) - 1) {
                         liandui = false;
                         break;
                     }
@@ -135,21 +158,57 @@ public class Card {
 
     public static int getCardValue(List<Integer> cardList, CardType cardType) {
         List<Integer> cards = new ArrayList<>();
-        for (Integer integer : cardList) {
-            cards.add(integer % 100);
+        for (int integer : cardList) {
+            if (2 == integer % 100) {
+                cards.add(15);
+            } else {
+                cards.add(integer % 100);
+            }
         }
-        cards.sort(Integer::compareTo);
+        cards.sort(new Comparator<Integer>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                return o1.compareTo(o2);
+            }
+        });
         switch (cardType) {
             case DANPAI:
             case DUIPAI:
+                return cards.get(0);
             case LIANDUI:
+                if (2 == Card.containSize(cardList, 3) && 2 == Card.containSize(cardList, 15)) {
+                    if (2 == Card.containSize(cardList, 14)) {
+                        return 1;
+                    } else {
+                        return 2;
+                    }
+                }
+                return cards.get(1);
             case SHUNZI:
             case ZHADAN:
+                if (cards.contains(3) && cards.contains(2)) {
+                    if (cards.contains(14)) {
+                        return 1;
+                    } else {
+                        return 2;
+                    }
+                }
                 return cards.get(0);
             case SANZHANG:
                 return cards.get(2);
             case FEIJI:
-                return get_san(cards).get(0);
+                if (3 == Card.containSize(cardList, 3) && 3 == Card.containSize(cardList, 15)) {
+                    if (3 == Card.containSize(cardList, 14)) {
+                        return 1;
+                    } else {
+                        return 2;
+                    }
+                }
+                for (Integer integer : cardList) {
+                    if (3 == Card.containSize(cardList, integer)) {
+                        return integer;
+                    }
+                }
             case SIDAIER:
                 return cards.get(3);
         }

@@ -10,6 +10,9 @@ public class Seat {
 
     private int seatNo;                         //座位号
     private int userId;                         //用户名
+    private String nickname;                    //昵称
+    private String head;                        //头像
+    private boolean sex;                        //性别
     private List<Integer> cards;                //牌
     private List<Integer> initialCards;         //初始牌
     private int score;                          //输赢分数
@@ -32,6 +35,30 @@ public class Seat {
 
     public void setUserId(int userId) {
         this.userId = userId;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public String getHead() {
+        return head;
+    }
+
+    public void setHead(String head) {
+        this.head = head;
+    }
+
+    public boolean isSex() {
+        return sex;
+    }
+
+    public void setSex(boolean sex) {
+        this.sex = sex;
     }
 
     public List<Integer> getCards() {

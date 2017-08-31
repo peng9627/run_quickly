@@ -1,12 +1,13 @@
 package runquickly.mode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Record {
 
     private int multiple;
-    private List<OperationHistory> historyList;
-    private List<SeatRecord> seatRecordList;//座位战绩信息
+    private List<OperationHistory> historyList = new ArrayList<>();
+    private List<SeatRecord> seatRecordList = new ArrayList<>();//座位战绩信息
 
     public int getMultiple() {
         return multiple;

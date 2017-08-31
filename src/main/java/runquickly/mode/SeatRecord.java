@@ -1,11 +1,12 @@
 package runquickly.mode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SeatRecord {
     private int userId;                         //用户名
-    private List<Integer> initialCards;         //初始牌
-    private List<Integer> cards;                //牌
+    private List<Integer> initialCards = new ArrayList<>();         //初始牌
+    private List<Integer> cards = new ArrayList<>();                //牌
     private int winOrLoce;                      //输赢分数
 
     public int getUserId() {

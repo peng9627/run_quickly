@@ -56,15 +56,14 @@ public class RSAUtils {
     /**
      * 加密，返回BASE64编码的字符串
      *
-     * @param key       秘钥
-     * @param plainText 　需要加密的字符串
+     * @param key   秘钥
+     * @param bytes 　需要加密的字符串
      * @return 加密后的字符串
      */
-    public static String encrypt(Key key, String plainText) {
+    public static byte[] encrypt(Key key, byte[] bytes) {
         try {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.ENCRYPT_MODE, key);
-            byte[] bytes = plainText.getBytes();
 
             byte[] result = null;
             for (int i = 0; i < bytes.length; i += 117) {
@@ -73,7 +72,7 @@ public class RSAUtils {
             }
 
             if (result != null) {
-                return new String(Base64.getEncoder().encode(result));
+                return Base64.getEncoder().encode(result);
             }
         } catch (InvalidKeyException e) {
             e.printStackTrace();
@@ -94,16 +93,16 @@ public class RSAUtils {
      * 对明文密文进行解密
      *
      * @param key   秘钥
-     * @param enStr 　需要解密的字符串
+     * @param bytes 　需要解密的数据
      * @return 解密后的字符串
      */
-    public static byte[] decrypt(Key key, String enStr) {
+    public static byte[] decrypt(Key key, byte[] bytes) {
         try {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, key);
 
             byte[] result = null;
-            byte[] bytes = Base64.getDecoder().decode(enStr.getBytes());
+            bytes = Base64.getDecoder().decode(bytes);
             for (int i = 0; i < bytes.length; i += 128) {
                 byte[] doFinal = cipher.doFinal(ByteUtils.subarray(bytes, i, i + 128));
                 result = ByteUtils.addAll(result, doFinal);

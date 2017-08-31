@@ -6,7 +6,8 @@ package runquickly.mode;
  */
 public enum OperationHistoryType {
 
-    PLAY_CARD("出牌", 1),;
+    PLAY_CARD("出牌", 1),
+    PASS("出牌", 2);
 
     private String name;
     private Integer values;
