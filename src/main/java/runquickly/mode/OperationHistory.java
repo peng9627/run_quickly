@@ -1,5 +1,6 @@
 package runquickly.mode;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -11,6 +12,7 @@ public class OperationHistory {
     private int userId;
     private OperationHistoryType historyType;
     private List<Integer> cards;
+    private Date date;
 
     public OperationHistory() {
     }
@@ -19,6 +21,7 @@ public class OperationHistory {
         this.userId = userId;
         this.historyType = historyType;
         this.cards = cards;
+        this.date = new Date();
     }
 
     public int getUserId() {
@@ -43,5 +46,13 @@ public class OperationHistory {
 
     public void setCards(List<Integer> cards) {
         this.cards = cards;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 }

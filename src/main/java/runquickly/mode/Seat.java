@@ -20,6 +20,8 @@ public class Seat {
     private boolean isRobot;                    //是否托管
     private boolean ready;                      //准备
     private boolean completed;                  //就绪
+    private boolean canPlay;                    //能出牌
+    private int winCount;                       //赢的次数
 
     public int getSeatNo() {
         return seatNo;
@@ -117,10 +119,27 @@ public class Seat {
         this.completed = completed;
     }
 
+    public boolean isCanPlay() {
+        return canPlay;
+    }
+
+    public void setCanPlay(boolean canPlay) {
+        this.canPlay = canPlay;
+    }
+
+    public int getWinCount() {
+        return winCount;
+    }
+
+    public void setWinCount(int winCount) {
+        this.winCount = winCount;
+    }
+
     public void clear() {
         initialCards.clear();
         cards.clear();
         ready = false;
         completed = false;
+        canPlay = true;
     }
 }

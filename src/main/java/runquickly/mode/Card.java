@@ -27,15 +27,15 @@ public class Card {
                 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314));
     }
 
-    public static CardType getCardType(List<Integer> cardList) {
-        CardType cardType = getCardType(cardList, 1);
+    public static CardType getCardType(List<Integer> cardList, boolean feijizha) {
+        CardType cardType = getCardType(cardList, 1, feijizha);
         if (0 == CardType.ERROR.compareTo(cardType)) {
-            cardType = getCardType(cardList, 2);
+            cardType = getCardType(cardList, 2, feijizha);
         }
         return cardType;
     }
 
-    public static CardType getCardType(List<Integer> cardList, int times) {
+    public static CardType getCardType(List<Integer> cardList, int times, boolean feijizha) {
         List<Integer> cards = new ArrayList<>();
         for (int integer : cardList) {
             if (1 == times && 2 == integer % 100) {
@@ -93,17 +93,11 @@ public class Card {
                 }
                 return CardType.SHUNZI;
             case 6:
-                if (cards.get(0).intValue() == cards.get(2) && cards.get(3).intValue() == cards.get(5)) {
-                    return CardType.FEIJI;
-                }
-                if (cards.get(0).intValue() == cards.get(3) || cards.get(1).intValue() == cards.get(4) || cards.get(2).intValue() == cards.get(5)) {
+                if (cards.get(0).intValue() == cards.get(2) && cards.get(3).intValue() == cards.get(5) && cards.get(0) == cards.get(3) - 1) {
                     return CardType.FEIJI;
                 }
                 if (cards.get(0).intValue() == cards.get(1) && cards.get(0) == cards.get(2) - 1 && cards.get(0) == cards.get(3) - 1
                         && cards.get(0) == cards.get(4) - 2 && cards.get(0) == cards.get(5) - 2) {
-                    return CardType.LIANDUI;
-                }
-                if (cards.get(0) == 3 && cards.get(1) == 3 && cards.get(2) == 14 && cards.get(3) == 14 && cards.get(4) == 15 && cards.get(5) == 15) {
                     return CardType.LIANDUI;
                 }
                 for (int i = 0; i < 5; i++) {
@@ -141,16 +135,36 @@ public class Card {
                 return CardType.LIANDUI;
             }
 
+            boolean isFeiji = true;
             //飞机
             List<Integer> san = get_san(cards);
-            if (cards.size() - san.size() == 0 || cards.size() - san.size() == san.size() / 3) {
-                for (int i = 0; i < san.size() - 3; i += 2) {
-                    if (san.get(i).intValue() == san.get(i + 1) && san.get(i) == san.get(i + 2) - 1) {
-                        return CardType.ERROR;
+            if (cards.size() == san.size() || cards.size() - san.size() == 1) {
+                for (int i = 0; i < san.size() - 3; i += 3) {
+                    if (san.get(i) != san.get(i + 3) - 1) {
+                        isFeiji = false;
+                        break;
                     }
                 }
+            } else {
+                isFeiji = false;
             }
-            return CardType.FEIJI;
+            if (isFeiji) {
+                return CardType.FEIJI;
+            }
+
+            if (feijizha) {
+                List<Integer> si = get_si(cards);
+                if (cards.size() == si.size()) {
+                    for (int i = 0; i < si.size() - 4; i += 4) {
+                        if (si.get(i) != si.get(i + 4) - 1) {
+                            return CardType.ERROR;
+                        }
+                    }
+                } else {
+                    return CardType.ERROR;
+                }
+                return CardType.ZHADAN;
+            }
 
         }
         return CardType.ERROR;
@@ -238,6 +252,22 @@ public class Card {
                     san_arr.add(cards.get(i));
                     san_arr.add(cards.get(i));
                     i += 2;
+                }
+            }
+        }
+        return san_arr;
+    }
+
+    private static List<Integer> get_si(List<Integer> cards) {
+        List<Integer> san_arr = new ArrayList<>();
+        if (cards.size() >= 4) {
+            for (int i = 0; i < cards.size() - 3; i++) {
+                if (cards.get(i).intValue() == cards.get(i + 3).intValue()) {
+                    san_arr.add(cards.get(i));
+                    san_arr.add(cards.get(i));
+                    san_arr.add(cards.get(i));
+                    san_arr.add(cards.get(i));
+                    i += 3;
                 }
             }
         }
