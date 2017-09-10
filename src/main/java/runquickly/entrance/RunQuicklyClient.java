@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import runquickly.constant.Constant;
 import runquickly.mode.*;
 import runquickly.redis.RedisService;
-import runquickly.timeout.PlayCardTimeout;
 import runquickly.timeout.ReadyTimeout;
 import runquickly.utils.HttpUtil;
 import runquickly.utils.LoggerUtil;
@@ -42,13 +41,6 @@ public class RunQuicklyClient {
             if (redisService.exists("room" + roomNo)) {
                 while (!redisService.lock("lock_room" + roomNo)) {
                 }
-                synchronized (this) {
-                    try {
-                        wait(10);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
                 Room room = JSON.parseObject(redisService.getCache("room" + roomNo), Room.class);
                 if (null != room) {
                     for (Seat seat : room.getSeats()) {
@@ -57,20 +49,7 @@ public class RunQuicklyClient {
                             break;
                         }
                     }
-
-                    RunQuickly.RunQuicklyGameInfo.Builder gameInfo = RunQuickly.RunQuicklyGameInfo.newBuilder();
-                    gameInfo.setGameCount(room.getGameCount());
-                    gameInfo.setGameTimes(room.getGameTimes());
-                    for (int i = room.getHistoryList().size() - 1; i > room.getHistoryList().size() - room.getCount() - 1 && i > -1; i--) {
-                        OperationHistory operationHistory = room.getHistoryList().get(i);
-                        if (0 == OperationHistoryType.PLAY_CARD.compareTo(operationHistory.getHistoryType())) {
-                            gameInfo.setLastPlayCardUser(operationHistory.getUserId());
-                            break;
-                        }
-                    }
-                    addSeat(room, gameInfo);
-                    response.setOperationType(GameBase.OperationType.GAME_INFO).setData(gameInfo.build().toByteString());
-                    messageReceive.send(response.build(), userId);
+                    room.sendSeatInfo(response);
 
                     redisService.addCache("room" + roomNo, JSON.toJSONString(room));
                 }
@@ -182,7 +161,10 @@ public class RunQuicklyClient {
                         roomCardIntoResponseBuilder.setRoomOwner(room.getRoomOwner());
                         //房间是否已存在当前用户，存在则为重连
                         final boolean[] find = {false};
-                        room.getSeats().stream().filter(seat -> seat.getUserId() == userId).forEach(seat -> find[0] = true);
+                        room.getSeats().stream().filter(seat -> seat.getUserId() == userId).forEach(seat -> {
+                            find[0] = true;
+                            seat.setRobot(false);
+                        });
                         if (!find[0]) {
                             if (room.getCount() > room.getSeats().size()) {
                                 JSONObject jsonObject = new JSONObject();
@@ -347,51 +329,7 @@ public class RunQuicklyClient {
                                 room.playCard(userId, cards, response, redisService, actionResponse);
                                 break;
                             case PASS:
-                                for (Seat seat : room.getSeats()) {
-                                    if (seat.getUserId() == userId && room.getOperationSeat() == seat.getSeatNo()) {
-                                        if (1 == room.getGameRules() >> 1) {
-                                            seat.setCanPlay(false);
-                                        }
-                                        boolean canPass = false;
-                                        if (room.getHistoryList().size() > 0) {
-                                            for (int i = room.getHistoryList().size() - 1; i > room.getHistoryList().size() - room.getCount() && i > -1; i--) {
-                                                OperationHistory operationHistory = room.getHistoryList().get(i);
-                                                if (0 == OperationHistoryType.PLAY_CARD.compareTo(operationHistory.getHistoryType())) {
-                                                    canPass = true;
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                        if (!canPass) {
-                                            logger.warn("必须出牌");
-                                            break;
-                                        }
-
-                                        room.getHistoryList().add(new OperationHistory(userId, OperationHistoryType.PASS, null));
-                                        room.setLastOperation(seat.getUserId());
-                                        room.setOperationSeat(room.getNextSeat());
-                                        actionResponse.setID(userId).setOperationId(GameBase.ActionId.PASS).clearData();
-                                        response.setOperationType(GameBase.OperationType.ACTION).setData(actionResponse.build().toByteString());
-                                        room.getSeats().stream().filter(seat1 -> RunQuicklyTcpService.userClients.containsKey(seat1.getUserId()))
-                                                .forEach(seat1 -> RunQuicklyTcpService.userClients.get(seat1.getUserId()).send(response.build(), seat1.getUserId()));
-
-                                        Seat operationSeat = null;
-                                        for (Seat seat1 : room.getSeats()) {
-                                            if (seat1.getSeatNo() == room.getOperationSeat()) {
-                                                operationSeat = seat1;
-                                            }
-                                        }
-                                        if (redisService.exists("room_match" + roomNo)) {
-                                            new PlayCardTimeout(operationSeat.getUserId(), roomNo, room.getHistoryList().size(), room.getGameCount(), redisService).start();
-                                        }
-                                        GameBase.RoundResponse roundResponse = GameBase.RoundResponse.newBuilder()
-                                                .setTimeCounter(redisService.exists("room_match" + roomNo) ? 8 : 0).setID(operationSeat.getUserId()).build();
-                                        response.setOperationType(GameBase.OperationType.ROUND).setData(roundResponse.toByteString());
-                                        room.getSeats().stream().filter(seat1 -> RunQuicklyTcpService.userClients.containsKey(seat1.getUserId()))
-                                                .forEach(seat1 -> RunQuicklyTcpService.userClients.get(seat1.getUserId()).send(response.build(), seat1.getUserId()));
-                                        break;
-                                    }
-                                }
+                                room.pass(userId, actionResponse, response, redisService);
                                 break;
                         }
                         if (null != room.getRoomNo()) {
@@ -459,7 +397,7 @@ public class RunQuicklyClient {
                                 }
                             }
                             if (!dissolveReply.getAgree()) {
-                                GameBase.DissolveConfirm dissolveConfirm = GameBase.DissolveConfirm.newBuilder().setDissolved(false).setUserId(userId).build();
+                                GameBase.DissolveConfirm dissolveConfirm = GameBase.DissolveConfirm.newBuilder().setDissolved(false).build();
                                 response.setOperationType(GameBase.OperationType.DISSOLVE_CONFIRM).setData(dissolveConfirm.toByteString());
                                 for (Seat seat : room.getSeats()) {
                                     if (RunQuicklyTcpService.userClients.containsKey(seat.getUserId())) {

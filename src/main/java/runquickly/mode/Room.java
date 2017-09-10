@@ -660,6 +660,15 @@ public class Room {
         }
     }
 
+    /**
+     * 出牌
+     *
+     * @param userId
+     * @param cardList
+     * @param response
+     * @param redisService
+     * @param actionResponse
+     */
     public void playCard(int userId, List<Integer> cardList, GameBase.BaseConnection.Builder response, RedisService redisService,
                          GameBase.BaseAction.Builder actionResponse) {
         for (Seat seat : seats) {
@@ -689,11 +698,13 @@ public class Room {
                         }
                         if (0 == cardList.size()) {
                             System.out.println("必须出牌");
+                            pass(userId, actionResponse, response, redisService);
                             return;
                         } else {
                             CardType myCardType = Card.getCardType(cardList, 1 == gameRules % 2);
                             if (0 == myCardType.compareTo(CardType.ERROR)) {
                                 System.out.println("牌型错误");
+                                pass(userId, actionResponse, response, redisService);
                                 return;
                             }
                         }
@@ -704,6 +715,7 @@ public class Room {
 
                             if (0 == myCardType.compareTo(CardType.ERROR)) {
                                 System.out.println("牌型错误");
+                                pass(userId, actionResponse, response, redisService);
                                 return;
                             }
 
@@ -713,14 +725,17 @@ public class Room {
                                     int myValue = Card.getCardValue(cardList, myCardType);
                                     if (myValue <= value) {
                                         System.out.println("出牌错误:值小于");
+                                        pass(userId, actionResponse, response, redisService);
                                         return;
                                     }
                                 } else if (0 != CardType.ZHADAN.compareTo(cardType) || cardList.size() < cardSize) {
                                     System.out.println("出牌错误:张数不同，不是炸弹或张数小于");
+                                    pass(userId, actionResponse, response, redisService);
                                     return;
                                 }
                             } else if (myCardType != CardType.ZHADAN) {
                                 System.out.println("出牌错误:牌型不同并且不是炸弹");
+                                pass(userId, actionResponse, response, redisService);
                                 return;
                             }
                         } else {
@@ -785,7 +800,67 @@ public class Room {
 
                 } else {
                     System.out.println("用户手中没有此牌" + userId);
+                    pass(userId, actionResponse, response, redisService);
                 }
+                break;
+            }
+        }
+    }
+
+    /**
+     * 过
+     *
+     * @param userId         用户id
+     * @param actionResponse 行动通知
+     * @param response       返回
+     * @param redisService   redis
+     */
+    public void pass(int userId, GameBase.BaseAction.Builder actionResponse, GameBase.BaseConnection.Builder response, RedisService redisService) {
+        for (Seat seat : seats) {
+            if (seat.getUserId() == userId && operationSeat == seat.getSeatNo()) {
+                if (1 == gameRules >> 1) {
+                    seat.setCanPlay(false);
+                }
+                boolean canPass = false;
+                if (historyList.size() > 0) {
+                    for (int i = historyList.size() - 1; i > historyList.size() - count && i > -1; i--) {
+                        OperationHistory operationHistory = historyList.get(i);
+                        if (0 == OperationHistoryType.PLAY_CARD.compareTo(operationHistory.getHistoryType())) {
+                            canPass = true;
+                            break;
+                        }
+                    }
+                }
+                if (!canPass) {
+                    System.out.println("必须出牌");
+                    List<Integer> cardList = new ArrayList<>();
+                    cardList.add(seat.getCards().get(0));
+                    playCard(userId, cardList, response, redisService, actionResponse);
+                    break;
+                }
+
+                historyList.add(new OperationHistory(userId, OperationHistoryType.PASS, null));
+                lastOperation = seat.getUserId();
+                operationSeat = getNextSeat();
+                actionResponse.setID(userId).setOperationId(GameBase.ActionId.PASS).clearData();
+                response.setOperationType(GameBase.OperationType.ACTION).setData(actionResponse.build().toByteString());
+                seats.stream().filter(seat1 -> RunQuicklyTcpService.userClients.containsKey(seat1.getUserId()))
+                        .forEach(seat1 -> RunQuicklyTcpService.userClients.get(seat1.getUserId()).send(response.build(), seat1.getUserId()));
+
+                Seat operationSeat = null;
+                for (Seat seat1 : seats) {
+                    if (seat1.getSeatNo() == this.operationSeat) {
+                        operationSeat = seat1;
+                    }
+                }
+                if (redisService.exists("room_match" + roomNo)) {
+                    new PlayCardTimeout(operationSeat.getUserId(), roomNo, historyList.size(), gameCount, redisService).start();
+                }
+                GameBase.RoundResponse roundResponse = GameBase.RoundResponse.newBuilder()
+                        .setTimeCounter(redisService.exists("room_match" + roomNo) ? 8 : 0).setID(operationSeat.getUserId()).build();
+                response.setOperationType(GameBase.OperationType.ROUND).setData(roundResponse.toByteString());
+                seats.stream().filter(seat1 -> RunQuicklyTcpService.userClients.containsKey(seat1.getUserId()))
+                        .forEach(seat1 -> RunQuicklyTcpService.userClients.get(seat1.getUserId()).send(response.build(), seat1.getUserId()));
                 break;
             }
         }
