@@ -178,6 +178,8 @@ public class Room {
         seat.setSex(user.getSex().equals("MAN"));
         seat.setScore(score);
         seat.setSeatNo(seatNos.get(0));
+        seat.setIp(user.getLastLoginIp());
+        seat.setGamecount(user.getGameCount());
         seatNos.remove(0);
         seat.setUserId(user.getUserId());
         seats.add(seat);
@@ -252,10 +254,12 @@ public class Room {
                 resultResponse.addResult(result);
 
                 SeatRecord seatRecord = new SeatRecord();
+                seatRecord.setNickname(seat.getNickname());
+                seatRecord.setHead(seat.getHead());
                 seatRecord.setUserId(seat.getUserId());
                 seatRecord.getInitialCards().addAll(seat.getInitialCards());
                 seatRecord.getCards().addAll(seat.getCards());
-                seatRecord.setWinOrLoce(0 - score);
+                seatRecord.setWinOrLose(0 - score);
                 seatRecords.add(seatRecord);
 
             } else {
@@ -272,10 +276,12 @@ public class Room {
         resultResponse.addResult(result);
 
         SeatRecord seatRecord = new SeatRecord();
+        seatRecord.setNickname(winSeat.getNickname());
+        seatRecord.setHead(winSeat.getHead());
         seatRecord.setUserId(winSeat.getUserId());
         seatRecord.getInitialCards().addAll(winSeat.getInitialCards());
         seatRecord.getCards().addAll(winSeat.getCards());
-        seatRecord.setWinOrLoce(winScore);
+        seatRecord.setWinOrLose(winScore);
         seatRecords.add(seatRecord);
 
         record.getSeatRecordList().addAll(seatRecords);
@@ -340,7 +346,7 @@ public class Room {
                     SerializerFeature.WriteNullStringAsEmpty, SerializerFeature.WriteNullNumberAsZero,
                     SerializerFeature.WriteNullBooleanAsFalse};
             int feature = SerializerFeature.config(JSON.DEFAULT_GENERATE_FEATURE, SerializerFeature.WriteEnumUsingName, false);
-            jsonObject.put("gameType", 1);
+            jsonObject.put("gameType", 2);
             jsonObject.put("roomOwner", roomOwner);
             jsonObject.put("people", people.toString().substring(1));
             jsonObject.put("gameTotal", gameTimes);
@@ -563,6 +569,7 @@ public class Room {
                             matchResult.addMatchUserResult(GameBase.MatchUserResult.newBuilder()
                                     .setUserId(matchUsers.get(i).getUserId()).setRanking(i + 1));
                         }
+                        matchInfo.setStatus(-1);
                         response.setOperationType(GameBase.OperationType.MATCH_RESULT).setData(matchResult.build().toByteString());
                         for (Seat seat : seats) {
                             if (RunQuicklyTcpService.userClients.containsKey(seat.getUserId())) {
@@ -572,9 +579,11 @@ public class Room {
                         break;
                 }
 
-                matchInfo.setRooms(rooms);
-                matchInfo.setWaitUsers(waitUsers);
-                redisService.addCache("match_info" + matchNo, JSON.toJSONString(matchInfo));
+                if (0 < matchInfo.getStatus()) {
+                    matchInfo.setRooms(rooms);
+                    matchInfo.setWaitUsers(waitUsers);
+                    redisService.addCache("match_info" + matchNo, JSON.toJSONString(matchInfo));
+                }
                 redisService.unlock("lock_match_info" + matchNo);
             }
         }
@@ -614,7 +623,8 @@ public class Room {
             seatResponse.setID(seat1.getUserId());
             seatResponse.setScore(seat1.getScore());
             seatResponse.setReady(seat1.isReady());
-            seatResponse.setAreaString(seat1.getAreaString());
+            seatResponse.setIp(seat1.getIp());
+            seatResponse.setGameCount(seat1.getGamecount());
             seatResponse.setNickname(seat1.getNickname());
             seatResponse.setHead(seat1.getHead());
             seatResponse.setSex(seat1.isSex());
@@ -737,6 +747,9 @@ public class Room {
                                 System.out.println("出牌错误:牌型不同并且不是炸弹");
                                 pass(userId, actionResponse, response, redisService);
                                 return;
+                            }
+                            if (myCardType == CardType.ZHADAN) {
+                                multiple *= 2;
                             }
                         } else {
                             if (1 == gameRules >> 1) {

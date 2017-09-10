@@ -22,6 +22,8 @@ public class Seat {
     private boolean completed;                  //就绪
     private boolean canPlay;                    //能出牌
     private int winCount;                       //赢的次数
+    private String ip;                          //ip
+    private int gamecount;                      //游戏局数
 
     public int getSeatNo() {
         return seatNo;
@@ -133,6 +135,22 @@ public class Seat {
 
     public void setWinCount(int winCount) {
         this.winCount = winCount;
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public int getGamecount() {
+        return gamecount;
+    }
+
+    public void setGamecount(int gamecount) {
+        this.gamecount = gamecount;
     }
 
     public void clear() {

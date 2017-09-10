@@ -38,6 +38,11 @@ public class RunQuicklyClient {
 
     public void close() {
         if (0 != userId) {
+            synchronized (RunQuicklyTcpService.userClients) {
+                if (RunQuicklyTcpService.userClients.containsKey(userId) && messageReceive == RunQuicklyTcpService.userClients.get(userId)) {
+                    RunQuicklyTcpService.userClients.remove(userId);
+                }
+            }
             if (redisService.exists("room" + roomNo)) {
                 while (!redisService.lock("lock_room" + roomNo)) {
                 }
@@ -247,7 +252,8 @@ public class RunQuicklyClient {
                             seatResponse.setID(userId);
                             seatResponse.setScore(score);
                             seatResponse.setReady(false);
-                            seatResponse.setAreaString(userResponse.getData().getArea());
+                            seatResponse.setIp(userResponse.getData().getLastLoginIp());
+                            seatResponse.setGameCount(userResponse.getData().getGameCount());
                             seatResponse.setNickname(userResponse.getData().getNickname());
                             seatResponse.setHead(userResponse.getData().getHead());
                             seatResponse.setSex(userResponse.getData().getSex().equals("MAN"));
@@ -372,6 +378,16 @@ public class RunQuicklyClient {
                             if (RunQuicklyTcpService.userClients.containsKey(seat.getUserId())) {
                                 messageReceive.send(response.build(), seat.getUserId());
                             }
+                        }
+                        if (1 == room.getSeats().size()) {
+                            GameBase.DissolveConfirm dissolveConfirm = GameBase.DissolveConfirm.newBuilder().setDissolved(true).build();
+                            response.setOperationType(GameBase.OperationType.DISSOLVE_CONFIRM).setData(dissolveConfirm.toByteString());
+                            for (Seat seat : room.getSeats()) {
+                                if (RunQuicklyTcpService.userClients.containsKey(seat.getUserId())) {
+                                    messageReceive.send(response.build(), seat.getUserId());
+                                }
+                            }
+                            room.roomOver(response, redisService);
                         }
                         redisService.unlock("lock_room" + roomNo);
                     }
