@@ -64,6 +64,9 @@ public class PlayCardTimeout extends Thread {
                 if (room.getHistoryList().size() > 0) {
                     for (int i = room.getHistoryList().size() - 1; i > room.getHistoryList().size() - room.getCount() && i > -1; i--) {
                         OperationHistory operationHistory = room.getHistoryList().get(i);
+                        if (operationHistory.getUserId() == userId) {
+                            break;
+                        }
                         if (0 == OperationHistoryType.PLAY_CARD.compareTo(operationHistory.getHistoryType())) {
                             cardType = Card.getCardType(operationHistory.getCards(), 1 == room.getGameRules() % 2);
                             break;

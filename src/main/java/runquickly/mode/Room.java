@@ -188,7 +188,7 @@ public class Room {
 
     public void dealCard() {
         startDate = new Date();
-        int min = Card.getAllCard().size();
+        int min = 14;
         if (operationSeat == 0) {
             List<Integer> surplusCards = Card.getAllCard();
             for (Seat seat : seats) {
@@ -196,8 +196,8 @@ public class Room {
                 List<Integer> cardList = new ArrayList<>();
                 for (int i = 0; i < 13; i++) {
                     int cardIndex = (int) (Math.random() * surplusCards.size());
-                    if (cardIndex < min && 0 != cardIndex) {
-                        min = cardIndex;
+                    if (surplusCards.get(cardIndex) < min && 0 != cardIndex && surplusCards.get(cardIndex) < 100) {
+                        min = surplusCards.get(cardIndex);
                         operationSeat = seat.getSeatNo();
                     }
                     cardList.add(surplusCards.get(cardIndex));
@@ -211,12 +211,18 @@ public class Room {
 
     public int getNextSeat() {
         int next = operationSeat;
-        if (count == next) {
-            next = 1;
-        } else {
-            next += 1;
+        while (true) {
+            if (count == next) {
+                next = 1;
+            } else {
+                next += 1;
+            }
+            for (Seat seat : seats) {
+                if (seat.getSeatNo() == next && seat.isCanPlay()) {
+                    return next;
+                }
+            }
         }
-        return next;
     }
 
 
@@ -395,6 +401,23 @@ public class Room {
                             matchUser.setScore(seat.getScore());
                         }
                     }
+                    if (RunQuicklyTcpService.userClients.containsKey(seat.getUserId())) {
+                        RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.setOperationType(GameBase.OperationType.ROOM_INFO).clearData().build(), seat.getUserId());
+                        GameBase.RoomSeatsInfo.Builder roomSeatsInfo = GameBase.RoomSeatsInfo.newBuilder();
+                        GameBase.SeatResponse.Builder seatResponse = GameBase.SeatResponse.newBuilder();
+                        seatResponse.setSeatNo(1);
+                        seatResponse.setID(seat.getUserId());
+                        seatResponse.setScore(seat.getScore());
+                        seatResponse.setReady(false);
+                        seatResponse.setIp(seat.getIp());
+                        seatResponse.setGameCount(seat.getGamecount());
+                        seatResponse.setNickname(seat.getNickname());
+                        seatResponse.setHead(seat.getHead());
+                        seatResponse.setSex(seat.isSex());
+                        seatResponse.setOffline(false);
+                        roomSeatsInfo.addSeats(seatResponse.build());
+                        RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.setOperationType(GameBase.OperationType.SEAT_INFO).setData(roomSeatsInfo.build().toByteString()).build(), seat.getUserId());
+                    }
                 }
 
                 //用户对应分数
@@ -425,6 +448,11 @@ public class Room {
                                 if (matchUser.getUserId() == seat.getUserId()) {
                                     if (seat.getScore() < 500 + (addScoreCount * 100) && matchUsers.size() > arena.getCount() / 2) {
                                         matchUsers.remove(matchUser);
+                                        response.setOperationType(GameBase.OperationType.MATCH_RESULT).setData(GameBase.MatchResult.newBuilder()
+                                                .setRanking(matchUsers.size()).build().toByteString());
+                                        if (RunQuicklyTcpService.userClients.containsKey(matchUser.getUserId())) {
+                                            RunQuicklyTcpService.userClients.get(matchUser.getUserId()).send(response.build(), matchUser.getUserId());
+                                        }
                                         redisService.delete("reconnect" + seat.getUserId());
                                     } else {
                                         thisWait.add(matchUser);
@@ -526,7 +554,13 @@ public class Room {
                             }
                         });
                         while (waitUsers.size() > 4) {
-                            MatchUser matchUser = waitUsers.remove(4);
+                            MatchUser matchUser = waitUsers.remove(waitUsers.size() - 1);
+
+                            response.setOperationType(GameBase.OperationType.MATCH_RESULT).setData(GameBase.MatchResult.newBuilder()
+                                    .setRanking(matchUsers.size()).build().toByteString());
+                            if (RunQuicklyTcpService.userClients.containsKey(matchUser.getUserId())) {
+                                RunQuicklyTcpService.userClients.get(matchUser.getUserId()).send(response.build(), matchUser.getUserId());
+                            }
                             redisService.delete("reconnect" + matchUser.getUserId());
                         }
 
@@ -558,7 +592,6 @@ public class Room {
                         }
                         break;
                     case 5:
-                        GameBase.MatchResult.Builder matchResult = GameBase.MatchResult.newBuilder();
                         matchUsers.sort(new Comparator<MatchUser>() {
                             @Override
                             public int compare(MatchUser o1, MatchUser o2) {
@@ -566,16 +599,12 @@ public class Room {
                             }
                         });
                         for (int i = 0; i < matchUsers.size(); i++) {
-                            matchResult.addMatchUserResult(GameBase.MatchUserResult.newBuilder()
-                                    .setUserId(matchUsers.get(i).getUserId()).setRanking(i + 1));
-                        }
-                        matchInfo.setStatus(-1);
-                        response.setOperationType(GameBase.OperationType.MATCH_RESULT).setData(matchResult.build().toByteString());
-                        for (Seat seat : seats) {
-                            if (RunQuicklyTcpService.userClients.containsKey(seat.getUserId())) {
-                                RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.build(), seat.getUserId());
+                            response.setOperationType(GameBase.OperationType.MATCH_RESULT).setData(GameBase.MatchResult.newBuilder().setRanking(i + 1).build().toByteString());
+                            if (RunQuicklyTcpService.userClients.containsKey(matchUsers.get(i).getUserId())) {
+                                RunQuicklyTcpService.userClients.get(matchUsers.get(i).getUserId()).send(response.build(), matchUsers.get(i).getUserId());
                             }
                         }
+                        matchInfo.setStatus(-1);
                         break;
                 }
 
@@ -681,6 +710,10 @@ public class Room {
      */
     public void playCard(int userId, List<Integer> cardList, GameBase.BaseConnection.Builder response, RedisService redisService,
                          GameBase.BaseAction.Builder actionResponse) {
+        System.out.println("出牌------");
+        for (Integer integers : cardList) {
+            System.out.print(integers);
+        }
         for (Seat seat : seats) {
             if (seat.getUserId() == userId && operationSeat == seat.getSeatNo()) {
                 if (seat.getCards().containsAll(cardList)) {
@@ -692,8 +725,11 @@ public class Room {
                     if (historyList.size() > 0) {
                         for (int i = historyList.size() - 1; i > historyList.size() - count && i > -1; i--) {
                             OperationHistory operationHistory = historyList.get(i);
+                            if (operationHistory.getUserId() == userId) {
+                                break;
+                            }
                             if (0 == OperationHistoryType.PLAY_CARD.compareTo(operationHistory.getHistoryType())) {
-                                cardType = Card.getCardType(operationHistory.getCards(), 1 == gameRules % 2);
+                                cardType = Card.getCardType(operationHistory.getCards(), 1 == gameRules >> 1 % 2);
                                 value = Card.getCardValue(operationHistory.getCards(), cardType);
                                 cardSize = operationHistory.getCards().size();
                                 break;
@@ -711,17 +747,21 @@ public class Room {
                             pass(userId, actionResponse, response, redisService);
                             return;
                         } else {
-                            CardType myCardType = Card.getCardType(cardList, 1 == gameRules % 2);
+                            CardType myCardType = Card.getCardType(cardList, 1 == gameRules >> 1 % 2);
                             if (0 == myCardType.compareTo(CardType.ERROR)) {
                                 System.out.println("牌型错误");
                                 pass(userId, actionResponse, response, redisService);
                                 return;
                             }
+                            if (myCardType == CardType.ZHADAN) {
+                                multiple *= 2;
+                            }
                         }
                     } else {
+
                         //是否出牌
                         if (0 != cardList.size() && seat.isCanPlay()) {
-                            CardType myCardType = Card.getCardType(cardList, 1 == gameRules % 2);
+                            CardType myCardType = Card.getCardType(cardList, 1 == gameRules >> 1 % 2);
 
                             if (0 == myCardType.compareTo(CardType.ERROR)) {
                                 System.out.println("牌型错误");
@@ -752,7 +792,7 @@ public class Room {
                                 multiple *= 2;
                             }
                         } else {
-                            if (1 == gameRules >> 1) {
+                            if (1 == gameRules % 2) {
                                 seat.setCanPlay(false);
                             }
                             historyList.add(new OperationHistory(userId, OperationHistoryType.PASS, null));
@@ -831,13 +871,18 @@ public class Room {
     public void pass(int userId, GameBase.BaseAction.Builder actionResponse, GameBase.BaseConnection.Builder response, RedisService redisService) {
         for (Seat seat : seats) {
             if (seat.getUserId() == userId && operationSeat == seat.getSeatNo()) {
-                if (1 == gameRules >> 1) {
+                if (1 == gameRules % 2) {
+
+
                     seat.setCanPlay(false);
                 }
                 boolean canPass = false;
                 if (historyList.size() > 0) {
                     for (int i = historyList.size() - 1; i > historyList.size() - count && i > -1; i--) {
                         OperationHistory operationHistory = historyList.get(i);
+                        if (operationHistory.getUserId() == userId) {
+                            break;
+                        }
                         if (0 == OperationHistoryType.PLAY_CARD.compareTo(operationHistory.getHistoryType())) {
                             canPass = true;
                             break;

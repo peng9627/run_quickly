@@ -97,6 +97,9 @@ public class Card {
                         && cards.get(0) == cards.get(4) - 2 && cards.get(0) == cards.get(5) - 2) {
                     return CardType.LIANDUI;
                 }
+                if (cards.get(0).intValue() == cards.get(3) || cards.get(1).intValue() == cards.get(4) || cards.get(2).intValue() == cards.get(5)) {
+                    return CardType.SIDAIER;
+                }
                 for (int i = 0; i < 5; i++) {
                     if (cards.get(i) != cards.get(i + 1) - 1) {
                         return CardType.ERROR;
@@ -132,6 +135,23 @@ public class Card {
                 return CardType.LIANDUI;
             }
 
+            boolean isFeijiZha = true;
+            if (feijizha) {
+                List<Integer> si = get_si(cards);
+                if (cards.size() == si.size()) {
+                    for (int i = 0; i < si.size() - 4; i += 4) {
+                        if (si.get(i) != si.get(i + 4) - 1) {
+                            isFeijiZha = false;
+                        }
+                    }
+                } else {
+                    isFeijiZha = false;
+                }
+            }
+            if (isFeijiZha) {
+                return CardType.ZHADAN;
+            }
+
             boolean isFeiji = true;
             //飞机
             List<Integer> san = get_san(cards);
@@ -149,19 +169,6 @@ public class Card {
                 return CardType.FEIJI;
             }
 
-            if (feijizha) {
-                List<Integer> si = get_si(cards);
-                if (cards.size() == si.size()) {
-                    for (int i = 0; i < si.size() - 4; i += 4) {
-                        if (si.get(i) != si.get(i + 4) - 1) {
-                            return CardType.ERROR;
-                        }
-                    }
-                } else {
-                    return CardType.ERROR;
-                }
-                return CardType.ZHADAN;
-            }
 
         }
         return CardType.ERROR;
