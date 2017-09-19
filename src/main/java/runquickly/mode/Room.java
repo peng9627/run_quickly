@@ -326,10 +326,10 @@ public class Room {
             }
             jsonObject.put("description", "开房间退回" + roomNo);
             jsonObject.put("userId", roomOwner);
-            ApiResponse moneyDetail = JSON.parseObject(HttpUtil.urlConnectionByRsa("http://127.0.0.1:9999/api/money_detailed/create", jsonObject.toJSONString()), new TypeReference<ApiResponse<User>>() {
+            ApiResponse moneyDetail = JSON.parseObject(HttpUtil.urlConnectionByRsa(Constant.apiUrl + Constant.moneyDetailedCreate, jsonObject.toJSONString()), new TypeReference<ApiResponse<User>>() {
             });
             if (0 != moneyDetail.getCode()) {
-                LoggerFactory.getLogger(this.getClass()).error("http://127.0.0.1:9999/api/money_detailed/create?" + jsonObject.toJSONString());
+                LoggerFactory.getLogger(this.getClass()).error(Constant.apiUrl + Constant.moneyDetailedCreate + "?" + jsonObject.toJSONString());
             }
         }
         RunQuickly.RunQuicklyResponse.Builder over = RunQuickly.RunQuicklyResponse.newBuilder();
@@ -381,6 +381,9 @@ public class Room {
             jsonObject.put("gameCount", gameCount);
             jsonObject.put("peopleCount", count);
             jsonObject.put("roomNo", Integer.parseInt(roomNo));
+            JSONObject gameRule = new JSONObject();
+            gameRule.put("gameRules", gameRules);
+            jsonObject.put("gameRule", gameRule.toJSONString());
             jsonObject.put("gameData", JSON.toJSONString(recordList, feature, features).getBytes());
             jsonObject.put("scoreData", JSON.toJSONString(totalScores, feature, features).getBytes());
 
@@ -756,6 +759,19 @@ public class Room {
                                 cardSize = operationHistory.getCards().size();
                                 break;
                             }
+                        }
+                    } else {
+                        List<Integer> temps = new ArrayList<>();
+                        temps.addAll(seat.getCards());
+                        temps.sort(new Comparator<Integer>() {
+                            @Override
+                            public int compare(Integer o1, Integer o2) {
+                                return o1.compareTo(o2);
+                            }
+                        });
+                        if (0 == Card.containSize(cardList, temps.get(0))) {
+                            cardList.clear();
+                            cardList.add(temps.get(0));
                         }
                     }
 
