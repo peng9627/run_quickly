@@ -16,12 +16,12 @@ import java.util.*;
 public class MatchInfo {
 
     private int status;
-    private Date startDate;
     private List<Integer> rooms;
     private Arena arena;
     private List<MatchUser> matchUsers;
     private boolean start;
     private List<MatchUser> waitUsers;
+    private int matchEliminateScore;
 
     public int getStatus() {
         return status;
@@ -29,14 +29,6 @@ public class MatchInfo {
 
     public void setStatus(int status) {
         this.status = status;
-    }
-
-    public Date getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(Date startDate) {
-        this.startDate = startDate;
     }
 
     public List<Integer> getRooms() {
@@ -79,6 +71,14 @@ public class MatchInfo {
         this.waitUsers = waitUsers;
     }
 
+    public int getMatchEliminateScore() {
+        return matchEliminateScore;
+    }
+
+    public void setMatchEliminateScore(int matchEliminateScore) {
+        this.matchEliminateScore = matchEliminateScore;
+    }
+
     public int addRoom(String matchNo, int gameTimes, RedisService redisService, List<User> users, Map<Integer, Integer> userIdScore,
                        GameBase.BaseConnection.Builder response, GameBase.MatchData.Builder matchData) {
         Room room = new Room();
@@ -103,7 +103,7 @@ public class MatchInfo {
             redisService.addCache("reconnect" + user.getUserId(), "run_quickly," + room.getRoomNo());
         }
         room.sendSeatInfo(response);
-        new ReadyTimeout(Integer.parseInt(room.getRoomNo()), redisService).start();
+        new ReadyTimeout(Integer.parseInt(room.getRoomNo()), redisService, 0).start();
         redisService.addCache("room" + room.getRoomNo(), JSON.toJSONString(room));
         return Integer.parseInt(room.getRoomNo());
     }

@@ -204,7 +204,7 @@ public class Card {
                 return cards.get(1);
             case SHUNZI:
             case ZHADAN:
-                if (cards.contains(3) && cards.contains(2)) {
+                if (cards.contains(3) && cards.contains(15)) {
                     if (cards.contains(14)) {
                         return 1;
                     } else {

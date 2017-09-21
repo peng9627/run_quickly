@@ -68,7 +68,6 @@ public class RunQuicklyClient {
         for (Seat seat1 : room.getSeats()) {
             RunQuickly.RunQuicklySeatGameInfo.Builder seatResponse = RunQuickly.RunQuicklySeatGameInfo.newBuilder();
             seatResponse.setID(seat1.getUserId());
-            seatResponse.setIsRobot(seat1.isRobot());
             if (null != seat1.getCards()) {
                 if (seat1.getUserId() == userId) {
                     seatResponse.addAllCards(seat1.getCards());
@@ -151,17 +150,20 @@ public class RunQuicklyClient {
                                 messageReceive.send(response.setOperationType(GameBase.OperationType.MATCH_INFO)
                                         .setData(matchInfoResponse.toByteString()).build(), userId);
 
+                                int status = matchInfo.getStatus();
+                                if (status > 2) {
+                                    status = status == 5 ? 3 : 2;
+                                }
                                 GameBase.MatchData matchData = GameBase.MatchData.newBuilder()
                                         .setCurrentCount(matchInfo.getMatchUsers().size())
-                                        .setStartDate(matchInfo.getStartDate().getTime())
-                                        .setStatus(matchInfo.getStatus()).build();
+                                        .setStatus(status).build();
                                 messageReceive.send(response.setOperationType(GameBase.OperationType.MATCH_DATA)
                                         .setData(matchData.toByteString()).build(), userId);
 
                                 if (!matchInfo.isStart()) {
                                     List<Integer> roomNos = matchInfo.getRooms();
                                     for (Integer roomNo1 : roomNos) {
-                                        new ReadyTimeout(roomNo1, redisService).start();
+                                        new ReadyTimeout(roomNo1, redisService, 0).start();
                                     }
                                 }
                                 matchInfo.setStart(true);
@@ -305,7 +307,7 @@ public class RunQuicklyClient {
                             seatResponse.setNickname(userResponse.getData().getNickname());
                             seatResponse.setHead(userResponse.getData().getHead());
                             seatResponse.setSex(userResponse.getData().getSex().equals("MAN"));
-                            seatResponse.setOffline(false);
+                            seatResponse.setOffline(false);seatResponse.setIsRobot(false);
                             roomSeatsInfo.addSeats(seatResponse.build());
                             messageReceive.send(response.setOperationType(GameBase.OperationType.SEAT_INFO).setData(roomSeatsInfo.build().toByteString()).build(), userId);
                         }
@@ -476,17 +478,16 @@ public class RunQuicklyClient {
                                 dissolveStatus = dissolveStatus + "-2" + userId;
                             }
                             redisService.addCache("dissolve" + roomNo, dissolveStatus);
-                            boolean confirm = true;
                             int disagree = 0;
+                            int agree = 0;
                             GameBase.DissolveReplyResponse.Builder replyResponse = GameBase.DissolveReplyResponse.newBuilder();
                             for (Seat seat : room.getSeats()) {
                                 if (dissolveStatus.contains("-1" + seat.getUserId())) {
                                     replyResponse.addDissolve(GameBase.Dissolve.newBuilder().setUserId(userId).setAgree(true));
+                                    agree++;
                                 } else if (dissolveStatus.contains("-2" + seat.getUserId())) {
                                     replyResponse.addDissolve(GameBase.Dissolve.newBuilder().setUserId(userId).setAgree(false));
                                     disagree++;
-                                } else {
-                                    confirm = false;
                                 }
                             }
                             response.setOperationType(GameBase.OperationType.DISSOLVE_REPLY).setData(replyResponse.build().toByteString());
@@ -496,7 +497,7 @@ public class RunQuicklyClient {
                                 }
                             }
 
-                            if (disagree > 0) {
+                            if (disagree >= room.getSeats().size() / 2) {
                                 GameBase.DissolveConfirm dissolveConfirm = GameBase.DissolveConfirm.newBuilder().setDissolved(false).build();
                                 response.setOperationType(GameBase.OperationType.DISSOLVE_CONFIRM).setData(dissolveConfirm.toByteString());
                                 for (Seat seat : room.getSeats()) {
@@ -506,7 +507,7 @@ public class RunQuicklyClient {
                                 }
                                 redisService.delete("dissolve" + roomNo);
                                 redisService.addCache("delete_dissolve" + roomNo, "", 60);
-                            } else if (confirm) {
+                            } else if (agree > room.getSeats().size() / 2) {
                                 GameBase.DissolveConfirm dissolveConfirm = GameBase.DissolveConfirm.newBuilder().setDissolved(true).build();
                                 response.setOperationType(GameBase.OperationType.DISSOLVE_CONFIRM).setData(dissolveConfirm.toByteString());
                                 for (Seat seat : room.getSeats()) {

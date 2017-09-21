@@ -1898,19 +1898,10 @@ public final class RunQuickly {
 
     /**
      * <pre>
-     *是否托管
-     * </pre>
-     *
-     * <code>bool isRobot = 4;</code>
-     */
-    boolean getIsRobot();
-
-    /**
-     * <pre>
      *桌面上的牌
      * </pre>
      *
-     * <code>repeated int32 desktopCards = 5;</code>
+     * <code>repeated int32 desktopCards = 4;</code>
      */
     java.util.List<java.lang.Integer> getDesktopCardsList();
     /**
@@ -1918,7 +1909,7 @@ public final class RunQuickly {
      *桌面上的牌
      * </pre>
      *
-     * <code>repeated int32 desktopCards = 5;</code>
+     * <code>repeated int32 desktopCards = 4;</code>
      */
     int getDesktopCardsCount();
     /**
@@ -1926,7 +1917,7 @@ public final class RunQuickly {
      *桌面上的牌
      * </pre>
      *
-     * <code>repeated int32 desktopCards = 5;</code>
+     * <code>repeated int32 desktopCards = 4;</code>
      */
     int getDesktopCards(int index);
 
@@ -1935,7 +1926,7 @@ public final class RunQuickly {
      *是否过
      * </pre>
      *
-     * <code>bool passStatus = 6;</code>
+     * <code>bool passStatus = 5;</code>
      */
     boolean getPassStatus();
   }
@@ -1958,7 +1949,6 @@ public final class RunQuickly {
       iD_ = 0;
       cards_ = java.util.Collections.emptyList();
       cardsSize_ = 0;
-      isRobot_ = false;
       desktopCards_ = java.util.Collections.emptyList();
       passStatus_ = false;
     }
@@ -2020,24 +2010,19 @@ public final class RunQuickly {
               break;
             }
             case 32: {
-
-              isRobot_ = input.readBool();
-              break;
-            }
-            case 40: {
-              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
                 desktopCards_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000010;
+                mutable_bitField0_ |= 0x00000008;
               }
               desktopCards_.add(input.readInt32());
               break;
             }
-            case 42: {
+            case 34: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010) && input.getBytesUntilLimit() > 0) {
+              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008) && input.getBytesUntilLimit() > 0) {
                 desktopCards_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000010;
+                mutable_bitField0_ |= 0x00000008;
               }
               while (input.getBytesUntilLimit() > 0) {
                 desktopCards_.add(input.readInt32());
@@ -2045,7 +2030,7 @@ public final class RunQuickly {
               input.popLimit(limit);
               break;
             }
-            case 48: {
+            case 40: {
 
               passStatus_ = input.readBool();
               break;
@@ -2061,7 +2046,7 @@ public final class RunQuickly {
         if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
           cards_ = java.util.Collections.unmodifiableList(cards_);
         }
-        if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
           desktopCards_ = java.util.Collections.unmodifiableList(desktopCards_);
         }
         makeExtensionsImmutable();
@@ -2141,27 +2126,14 @@ public final class RunQuickly {
       return cardsSize_;
     }
 
-    public static final int ISROBOT_FIELD_NUMBER = 4;
-    private boolean isRobot_;
-    /**
-     * <pre>
-     *是否托管
-     * </pre>
-     *
-     * <code>bool isRobot = 4;</code>
-     */
-    public boolean getIsRobot() {
-      return isRobot_;
-    }
-
-    public static final int DESKTOPCARDS_FIELD_NUMBER = 5;
+    public static final int DESKTOPCARDS_FIELD_NUMBER = 4;
     private java.util.List<java.lang.Integer> desktopCards_;
     /**
      * <pre>
      *桌面上的牌
      * </pre>
      *
-     * <code>repeated int32 desktopCards = 5;</code>
+     * <code>repeated int32 desktopCards = 4;</code>
      */
     public java.util.List<java.lang.Integer>
         getDesktopCardsList() {
@@ -2172,7 +2144,7 @@ public final class RunQuickly {
      *桌面上的牌
      * </pre>
      *
-     * <code>repeated int32 desktopCards = 5;</code>
+     * <code>repeated int32 desktopCards = 4;</code>
      */
     public int getDesktopCardsCount() {
       return desktopCards_.size();
@@ -2182,21 +2154,21 @@ public final class RunQuickly {
      *桌面上的牌
      * </pre>
      *
-     * <code>repeated int32 desktopCards = 5;</code>
+     * <code>repeated int32 desktopCards = 4;</code>
      */
     public int getDesktopCards(int index) {
       return desktopCards_.get(index);
     }
     private int desktopCardsMemoizedSerializedSize = -1;
 
-    public static final int PASSSTATUS_FIELD_NUMBER = 6;
+    public static final int PASSSTATUS_FIELD_NUMBER = 5;
     private boolean passStatus_;
     /**
      * <pre>
      *是否过
      * </pre>
      *
-     * <code>bool passStatus = 6;</code>
+     * <code>bool passStatus = 5;</code>
      */
     public boolean getPassStatus() {
       return passStatus_;
@@ -2228,18 +2200,15 @@ public final class RunQuickly {
       if (cardsSize_ != 0) {
         output.writeUInt32(3, cardsSize_);
       }
-      if (isRobot_ != false) {
-        output.writeBool(4, isRobot_);
-      }
       if (getDesktopCardsList().size() > 0) {
-        output.writeUInt32NoTag(42);
+        output.writeUInt32NoTag(34);
         output.writeUInt32NoTag(desktopCardsMemoizedSerializedSize);
       }
       for (int i = 0; i < desktopCards_.size(); i++) {
         output.writeInt32NoTag(desktopCards_.get(i));
       }
       if (passStatus_ != false) {
-        output.writeBool(6, passStatus_);
+        output.writeBool(5, passStatus_);
       }
     }
 
@@ -2270,10 +2239,6 @@ public final class RunQuickly {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(3, cardsSize_);
       }
-      if (isRobot_ != false) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(4, isRobot_);
-      }
       {
         int dataSize = 0;
         for (int i = 0; i < desktopCards_.size(); i++) {
@@ -2290,7 +2255,7 @@ public final class RunQuickly {
       }
       if (passStatus_ != false) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(6, passStatus_);
+          .computeBoolSize(5, passStatus_);
       }
       memoizedSize = size;
       return size;
@@ -2314,8 +2279,6 @@ public final class RunQuickly {
           .equals(other.getCardsList());
       result = result && (getCardsSize()
           == other.getCardsSize());
-      result = result && (getIsRobot()
-          == other.getIsRobot());
       result = result && getDesktopCardsList()
           .equals(other.getDesktopCardsList());
       result = result && (getPassStatus()
@@ -2338,9 +2301,6 @@ public final class RunQuickly {
       }
       hash = (37 * hash) + CARDSSIZE_FIELD_NUMBER;
       hash = (53 * hash) + getCardsSize();
-      hash = (37 * hash) + ISROBOT_FIELD_NUMBER;
-      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-          getIsRobot());
       if (getDesktopCardsCount() > 0) {
         hash = (37 * hash) + DESKTOPCARDS_FIELD_NUMBER;
         hash = (53 * hash) + getDesktopCardsList().hashCode();
@@ -2487,10 +2447,8 @@ public final class RunQuickly {
         bitField0_ = (bitField0_ & ~0x00000002);
         cardsSize_ = 0;
 
-        isRobot_ = false;
-
         desktopCards_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000010);
+        bitField0_ = (bitField0_ & ~0x00000008);
         passStatus_ = false;
 
         return this;
@@ -2524,10 +2482,9 @@ public final class RunQuickly {
         }
         result.cards_ = cards_;
         result.cardsSize_ = cardsSize_;
-        result.isRobot_ = isRobot_;
-        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((bitField0_ & 0x00000008) == 0x00000008)) {
           desktopCards_ = java.util.Collections.unmodifiableList(desktopCards_);
-          bitField0_ = (bitField0_ & ~0x00000010);
+          bitField0_ = (bitField0_ & ~0x00000008);
         }
         result.desktopCards_ = desktopCards_;
         result.passStatus_ = passStatus_;
@@ -2589,13 +2546,10 @@ public final class RunQuickly {
         if (other.getCardsSize() != 0) {
           setCardsSize(other.getCardsSize());
         }
-        if (other.getIsRobot() != false) {
-          setIsRobot(other.getIsRobot());
-        }
         if (!other.desktopCards_.isEmpty()) {
           if (desktopCards_.isEmpty()) {
             desktopCards_ = other.desktopCards_;
-            bitField0_ = (bitField0_ & ~0x00000010);
+            bitField0_ = (bitField0_ & ~0x00000008);
           } else {
             ensureDesktopCardsIsMutable();
             desktopCards_.addAll(other.desktopCards_);
@@ -2802,49 +2756,11 @@ public final class RunQuickly {
         return this;
       }
 
-      private boolean isRobot_ ;
-      /**
-       * <pre>
-       *是否托管
-       * </pre>
-       *
-       * <code>bool isRobot = 4;</code>
-       */
-      public boolean getIsRobot() {
-        return isRobot_;
-      }
-      /**
-       * <pre>
-       *是否托管
-       * </pre>
-       *
-       * <code>bool isRobot = 4;</code>
-       */
-      public Builder setIsRobot(boolean value) {
-        
-        isRobot_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       *是否托管
-       * </pre>
-       *
-       * <code>bool isRobot = 4;</code>
-       */
-      public Builder clearIsRobot() {
-        
-        isRobot_ = false;
-        onChanged();
-        return this;
-      }
-
       private java.util.List<java.lang.Integer> desktopCards_ = java.util.Collections.emptyList();
       private void ensureDesktopCardsIsMutable() {
-        if (!((bitField0_ & 0x00000010) == 0x00000010)) {
+        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
           desktopCards_ = new java.util.ArrayList<java.lang.Integer>(desktopCards_);
-          bitField0_ |= 0x00000010;
+          bitField0_ |= 0x00000008;
          }
       }
       /**
@@ -2852,7 +2768,7 @@ public final class RunQuickly {
        *桌面上的牌
        * </pre>
        *
-       * <code>repeated int32 desktopCards = 5;</code>
+       * <code>repeated int32 desktopCards = 4;</code>
        */
       public java.util.List<java.lang.Integer>
           getDesktopCardsList() {
@@ -2863,7 +2779,7 @@ public final class RunQuickly {
        *桌面上的牌
        * </pre>
        *
-       * <code>repeated int32 desktopCards = 5;</code>
+       * <code>repeated int32 desktopCards = 4;</code>
        */
       public int getDesktopCardsCount() {
         return desktopCards_.size();
@@ -2873,7 +2789,7 @@ public final class RunQuickly {
        *桌面上的牌
        * </pre>
        *
-       * <code>repeated int32 desktopCards = 5;</code>
+       * <code>repeated int32 desktopCards = 4;</code>
        */
       public int getDesktopCards(int index) {
         return desktopCards_.get(index);
@@ -2883,7 +2799,7 @@ public final class RunQuickly {
        *桌面上的牌
        * </pre>
        *
-       * <code>repeated int32 desktopCards = 5;</code>
+       * <code>repeated int32 desktopCards = 4;</code>
        */
       public Builder setDesktopCards(
           int index, int value) {
@@ -2897,7 +2813,7 @@ public final class RunQuickly {
        *桌面上的牌
        * </pre>
        *
-       * <code>repeated int32 desktopCards = 5;</code>
+       * <code>repeated int32 desktopCards = 4;</code>
        */
       public Builder addDesktopCards(int value) {
         ensureDesktopCardsIsMutable();
@@ -2910,7 +2826,7 @@ public final class RunQuickly {
        *桌面上的牌
        * </pre>
        *
-       * <code>repeated int32 desktopCards = 5;</code>
+       * <code>repeated int32 desktopCards = 4;</code>
        */
       public Builder addAllDesktopCards(
           java.lang.Iterable<? extends java.lang.Integer> values) {
@@ -2925,11 +2841,11 @@ public final class RunQuickly {
        *桌面上的牌
        * </pre>
        *
-       * <code>repeated int32 desktopCards = 5;</code>
+       * <code>repeated int32 desktopCards = 4;</code>
        */
       public Builder clearDesktopCards() {
         desktopCards_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000010);
+        bitField0_ = (bitField0_ & ~0x00000008);
         onChanged();
         return this;
       }
@@ -2940,7 +2856,7 @@ public final class RunQuickly {
        *是否过
        * </pre>
        *
-       * <code>bool passStatus = 6;</code>
+       * <code>bool passStatus = 5;</code>
        */
       public boolean getPassStatus() {
         return passStatus_;
@@ -2950,7 +2866,7 @@ public final class RunQuickly {
        *是否过
        * </pre>
        *
-       * <code>bool passStatus = 6;</code>
+       * <code>bool passStatus = 5;</code>
        */
       public Builder setPassStatus(boolean value) {
         
@@ -2963,7 +2879,7 @@ public final class RunQuickly {
        *是否过
        * </pre>
        *
-       * <code>bool passStatus = 6;</code>
+       * <code>bool passStatus = 5;</code>
        */
       public Builder clearPassStatus() {
         
@@ -6057,80 +5973,51 @@ public final class RunQuickly {
 
   }
 
-  public interface RunQuicklyResponseOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:RunQuicklyResponse)
+  public interface RunQuicklyBalanceResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:RunQuicklyBalanceResponse)
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+     * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
      */
-    java.util.List<runquickly.mode.RunQuickly.RunQuicklySeatOver> 
-        getGameOverList();
+    java.util.List<runquickly.mode.RunQuickly.RunQuicklySeatBalance> 
+        getGameBalanceList();
     /**
-     * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+     * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
      */
-    runquickly.mode.RunQuickly.RunQuicklySeatOver getGameOver(int index);
+    runquickly.mode.RunQuickly.RunQuicklySeatBalance getGameBalance(int index);
     /**
-     * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+     * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
      */
-    int getGameOverCount();
+    int getGameBalanceCount();
     /**
-     * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+     * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
      */
-    java.util.List<? extends runquickly.mode.RunQuickly.RunQuicklySeatOverOrBuilder> 
-        getGameOverOrBuilderList();
+    java.util.List<? extends runquickly.mode.RunQuickly.RunQuicklySeatBalanceOrBuilder> 
+        getGameBalanceOrBuilderList();
     /**
-     * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+     * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
      */
-    runquickly.mode.RunQuickly.RunQuicklySeatOverOrBuilder getGameOverOrBuilder(
+    runquickly.mode.RunQuickly.RunQuicklySeatBalanceOrBuilder getGameBalanceOrBuilder(
         int index);
-
-    /**
-     * <pre>
-     *回到大厅的码
-     * </pre>
-     *
-     * <code>string backKey = 2;</code>
-     */
-    java.lang.String getBackKey();
-    /**
-     * <pre>
-     *回到大厅的码
-     * </pre>
-     *
-     * <code>string backKey = 2;</code>
-     */
-    com.google.protobuf.ByteString
-        getBackKeyBytes();
-
-    /**
-     * <pre>
-     *时间
-     * </pre>
-     *
-     * <code>uint64 dateTime = 3;</code>
-     */
-    long getDateTime();
   }
   /**
    * <pre>
-   *结束 OVER
+   *结束 BALANCE
    * </pre>
    *
-   * Protobuf type {@code RunQuicklyResponse}
+   * Protobuf type {@code RunQuicklyBalanceResponse}
    */
-  public  static final class RunQuicklyResponse extends
+  public  static final class RunQuicklyBalanceResponse extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:RunQuicklyResponse)
-      RunQuicklyResponseOrBuilder {
-    // Use RunQuicklyResponse.newBuilder() to construct.
-    private RunQuicklyResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:RunQuicklyBalanceResponse)
+      RunQuicklyBalanceResponseOrBuilder {
+    // Use RunQuicklyBalanceResponse.newBuilder() to construct.
+    private RunQuicklyBalanceResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private RunQuicklyResponse() {
-      gameOver_ = java.util.Collections.emptyList();
-      backKey_ = "";
-      dateTime_ = 0L;
+    private RunQuicklyBalanceResponse() {
+      gameBalance_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -6138,7 +6025,7 @@ public final class RunQuickly {
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
     }
-    private RunQuicklyResponse(
+    private RunQuicklyBalanceResponse(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -6160,22 +6047,11 @@ public final class RunQuickly {
             }
             case 10: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                gameOver_ = new java.util.ArrayList<runquickly.mode.RunQuickly.RunQuicklySeatOver>();
+                gameBalance_ = new java.util.ArrayList<runquickly.mode.RunQuickly.RunQuicklySeatBalance>();
                 mutable_bitField0_ |= 0x00000001;
               }
-              gameOver_.add(
-                  input.readMessage(runquickly.mode.RunQuickly.RunQuicklySeatOver.parser(), extensionRegistry));
-              break;
-            }
-            case 18: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              backKey_ = s;
-              break;
-            }
-            case 24: {
-
-              dateTime_ = input.readUInt64();
+              gameBalance_.add(
+                  input.readMessage(runquickly.mode.RunQuickly.RunQuicklySeatBalance.parser(), extensionRegistry));
               break;
             }
           }
@@ -6187,112 +6063,56 @@ public final class RunQuickly {
             e).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-          gameOver_ = java.util.Collections.unmodifiableList(gameOver_);
+          gameBalance_ = java.util.Collections.unmodifiableList(gameBalance_);
         }
         makeExtensionsImmutable();
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return runquickly.mode.RunQuickly.internal_static_RunQuicklyResponse_descriptor;
+      return runquickly.mode.RunQuickly.internal_static_RunQuicklyBalanceResponse_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return runquickly.mode.RunQuickly.internal_static_RunQuicklyResponse_fieldAccessorTable
+      return runquickly.mode.RunQuickly.internal_static_RunQuicklyBalanceResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              runquickly.mode.RunQuickly.RunQuicklyResponse.class, runquickly.mode.RunQuickly.RunQuicklyResponse.Builder.class);
+              runquickly.mode.RunQuickly.RunQuicklyBalanceResponse.class, runquickly.mode.RunQuickly.RunQuicklyBalanceResponse.Builder.class);
     }
 
-    private int bitField0_;
-    public static final int GAMEOVER_FIELD_NUMBER = 1;
-    private java.util.List<runquickly.mode.RunQuickly.RunQuicklySeatOver> gameOver_;
+    public static final int GAMEBALANCE_FIELD_NUMBER = 1;
+    private java.util.List<runquickly.mode.RunQuickly.RunQuicklySeatBalance> gameBalance_;
     /**
-     * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+     * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
      */
-    public java.util.List<runquickly.mode.RunQuickly.RunQuicklySeatOver> getGameOverList() {
-      return gameOver_;
+    public java.util.List<runquickly.mode.RunQuickly.RunQuicklySeatBalance> getGameBalanceList() {
+      return gameBalance_;
     }
     /**
-     * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+     * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
      */
-    public java.util.List<? extends runquickly.mode.RunQuickly.RunQuicklySeatOverOrBuilder> 
-        getGameOverOrBuilderList() {
-      return gameOver_;
+    public java.util.List<? extends runquickly.mode.RunQuickly.RunQuicklySeatBalanceOrBuilder> 
+        getGameBalanceOrBuilderList() {
+      return gameBalance_;
     }
     /**
-     * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+     * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
      */
-    public int getGameOverCount() {
-      return gameOver_.size();
+    public int getGameBalanceCount() {
+      return gameBalance_.size();
     }
     /**
-     * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+     * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
      */
-    public runquickly.mode.RunQuickly.RunQuicklySeatOver getGameOver(int index) {
-      return gameOver_.get(index);
+    public runquickly.mode.RunQuickly.RunQuicklySeatBalance getGameBalance(int index) {
+      return gameBalance_.get(index);
     }
     /**
-     * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+     * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
      */
-    public runquickly.mode.RunQuickly.RunQuicklySeatOverOrBuilder getGameOverOrBuilder(
+    public runquickly.mode.RunQuickly.RunQuicklySeatBalanceOrBuilder getGameBalanceOrBuilder(
         int index) {
-      return gameOver_.get(index);
-    }
-
-    public static final int BACKKEY_FIELD_NUMBER = 2;
-    private volatile java.lang.Object backKey_;
-    /**
-     * <pre>
-     *回到大厅的码
-     * </pre>
-     *
-     * <code>string backKey = 2;</code>
-     */
-    public java.lang.String getBackKey() {
-      java.lang.Object ref = backKey_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        backKey_ = s;
-        return s;
-      }
-    }
-    /**
-     * <pre>
-     *回到大厅的码
-     * </pre>
-     *
-     * <code>string backKey = 2;</code>
-     */
-    public com.google.protobuf.ByteString
-        getBackKeyBytes() {
-      java.lang.Object ref = backKey_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        backKey_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
-    public static final int DATETIME_FIELD_NUMBER = 3;
-    private long dateTime_;
-    /**
-     * <pre>
-     *时间
-     * </pre>
-     *
-     * <code>uint64 dateTime = 3;</code>
-     */
-    public long getDateTime() {
-      return dateTime_;
+      return gameBalance_.get(index);
     }
 
     private byte memoizedIsInitialized = -1;
@@ -6307,14 +6127,8 @@ public final class RunQuickly {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      for (int i = 0; i < gameOver_.size(); i++) {
-        output.writeMessage(1, gameOver_.get(i));
-      }
-      if (!getBackKeyBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, backKey_);
-      }
-      if (dateTime_ != 0L) {
-        output.writeUInt64(3, dateTime_);
+      for (int i = 0; i < gameBalance_.size(); i++) {
+        output.writeMessage(1, gameBalance_.get(i));
       }
     }
 
@@ -6323,16 +6137,9 @@ public final class RunQuickly {
       if (size != -1) return size;
 
       size = 0;
-      for (int i = 0; i < gameOver_.size(); i++) {
+      for (int i = 0; i < gameBalance_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, gameOver_.get(i));
-      }
-      if (!getBackKeyBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, backKey_);
-      }
-      if (dateTime_ != 0L) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeUInt64Size(3, dateTime_);
+          .computeMessageSize(1, gameBalance_.get(i));
       }
       memoizedSize = size;
       return size;
@@ -6344,18 +6151,14 @@ public final class RunQuickly {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof runquickly.mode.RunQuickly.RunQuicklyResponse)) {
+      if (!(obj instanceof runquickly.mode.RunQuickly.RunQuicklyBalanceResponse)) {
         return super.equals(obj);
       }
-      runquickly.mode.RunQuickly.RunQuicklyResponse other = (runquickly.mode.RunQuickly.RunQuicklyResponse) obj;
+      runquickly.mode.RunQuickly.RunQuicklyBalanceResponse other = (runquickly.mode.RunQuickly.RunQuicklyBalanceResponse) obj;
 
       boolean result = true;
-      result = result && getGameOverList()
-          .equals(other.getGameOverList());
-      result = result && getBackKey()
-          .equals(other.getBackKey());
-      result = result && (getDateTime()
-          == other.getDateTime());
+      result = result && getGameBalanceList()
+          .equals(other.getGameBalanceList());
       return result;
     }
 
@@ -6366,83 +6169,78 @@ public final class RunQuickly {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      if (getGameOverCount() > 0) {
-        hash = (37 * hash) + GAMEOVER_FIELD_NUMBER;
-        hash = (53 * hash) + getGameOverList().hashCode();
+      if (getGameBalanceCount() > 0) {
+        hash = (37 * hash) + GAMEBALANCE_FIELD_NUMBER;
+        hash = (53 * hash) + getGameBalanceList().hashCode();
       }
-      hash = (37 * hash) + BACKKEY_FIELD_NUMBER;
-      hash = (53 * hash) + getBackKey().hashCode();
-      hash = (37 * hash) + DATETIME_FIELD_NUMBER;
-      hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-          getDateTime());
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
 
-    public static runquickly.mode.RunQuickly.RunQuicklyResponse parseFrom(
+    public static runquickly.mode.RunQuickly.RunQuicklyBalanceResponse parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklyResponse parseFrom(
+    public static runquickly.mode.RunQuickly.RunQuicklyBalanceResponse parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklyResponse parseFrom(
+    public static runquickly.mode.RunQuickly.RunQuicklyBalanceResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklyResponse parseFrom(
+    public static runquickly.mode.RunQuickly.RunQuicklyBalanceResponse parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklyResponse parseFrom(byte[] data)
+    public static runquickly.mode.RunQuickly.RunQuicklyBalanceResponse parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklyResponse parseFrom(
+    public static runquickly.mode.RunQuickly.RunQuicklyBalanceResponse parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklyResponse parseFrom(java.io.InputStream input)
+    public static runquickly.mode.RunQuickly.RunQuicklyBalanceResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklyResponse parseFrom(
+    public static runquickly.mode.RunQuickly.RunQuicklyBalanceResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklyResponse parseDelimitedFrom(java.io.InputStream input)
+    public static runquickly.mode.RunQuickly.RunQuicklyBalanceResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklyResponse parseDelimitedFrom(
+    public static runquickly.mode.RunQuickly.RunQuicklyBalanceResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklyResponse parseFrom(
+    public static runquickly.mode.RunQuickly.RunQuicklyBalanceResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklyResponse parseFrom(
+    public static runquickly.mode.RunQuickly.RunQuicklyBalanceResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -6454,7 +6252,7 @@ public final class RunQuickly {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(runquickly.mode.RunQuickly.RunQuicklyResponse prototype) {
+    public static Builder newBuilder(runquickly.mode.RunQuickly.RunQuicklyBalanceResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -6470,28 +6268,28 @@ public final class RunQuickly {
     }
     /**
      * <pre>
-     *结束 OVER
+     *结束 BALANCE
      * </pre>
      *
-     * Protobuf type {@code RunQuicklyResponse}
+     * Protobuf type {@code RunQuicklyBalanceResponse}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:RunQuicklyResponse)
-        runquickly.mode.RunQuickly.RunQuicklyResponseOrBuilder {
+        // @@protoc_insertion_point(builder_implements:RunQuicklyBalanceResponse)
+        runquickly.mode.RunQuickly.RunQuicklyBalanceResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return runquickly.mode.RunQuickly.internal_static_RunQuicklyResponse_descriptor;
+        return runquickly.mode.RunQuickly.internal_static_RunQuicklyBalanceResponse_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return runquickly.mode.RunQuickly.internal_static_RunQuicklyResponse_fieldAccessorTable
+        return runquickly.mode.RunQuickly.internal_static_RunQuicklyBalanceResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                runquickly.mode.RunQuickly.RunQuicklyResponse.class, runquickly.mode.RunQuickly.RunQuicklyResponse.Builder.class);
+                runquickly.mode.RunQuickly.RunQuicklyBalanceResponse.class, runquickly.mode.RunQuickly.RunQuicklyBalanceResponse.Builder.class);
       }
 
-      // Construct using runquickly.mode.RunQuickly.RunQuicklyResponse.newBuilder()
+      // Construct using runquickly.mode.RunQuickly.RunQuicklyBalanceResponse.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -6504,57 +6302,49 @@ public final class RunQuickly {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
-          getGameOverFieldBuilder();
+          getGameBalanceFieldBuilder();
         }
       }
       public Builder clear() {
         super.clear();
-        if (gameOverBuilder_ == null) {
-          gameOver_ = java.util.Collections.emptyList();
+        if (gameBalanceBuilder_ == null) {
+          gameBalance_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000001);
         } else {
-          gameOverBuilder_.clear();
+          gameBalanceBuilder_.clear();
         }
-        backKey_ = "";
-
-        dateTime_ = 0L;
-
         return this;
       }
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return runquickly.mode.RunQuickly.internal_static_RunQuicklyResponse_descriptor;
+        return runquickly.mode.RunQuickly.internal_static_RunQuicklyBalanceResponse_descriptor;
       }
 
-      public runquickly.mode.RunQuickly.RunQuicklyResponse getDefaultInstanceForType() {
-        return runquickly.mode.RunQuickly.RunQuicklyResponse.getDefaultInstance();
+      public runquickly.mode.RunQuickly.RunQuicklyBalanceResponse getDefaultInstanceForType() {
+        return runquickly.mode.RunQuickly.RunQuicklyBalanceResponse.getDefaultInstance();
       }
 
-      public runquickly.mode.RunQuickly.RunQuicklyResponse build() {
-        runquickly.mode.RunQuickly.RunQuicklyResponse result = buildPartial();
+      public runquickly.mode.RunQuickly.RunQuicklyBalanceResponse build() {
+        runquickly.mode.RunQuickly.RunQuicklyBalanceResponse result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public runquickly.mode.RunQuickly.RunQuicklyResponse buildPartial() {
-        runquickly.mode.RunQuickly.RunQuicklyResponse result = new runquickly.mode.RunQuickly.RunQuicklyResponse(this);
+      public runquickly.mode.RunQuickly.RunQuicklyBalanceResponse buildPartial() {
+        runquickly.mode.RunQuickly.RunQuicklyBalanceResponse result = new runquickly.mode.RunQuickly.RunQuicklyBalanceResponse(this);
         int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
-        if (gameOverBuilder_ == null) {
+        if (gameBalanceBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            gameOver_ = java.util.Collections.unmodifiableList(gameOver_);
+            gameBalance_ = java.util.Collections.unmodifiableList(gameBalance_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
-          result.gameOver_ = gameOver_;
+          result.gameBalance_ = gameBalance_;
         } else {
-          result.gameOver_ = gameOverBuilder_.build();
+          result.gameBalance_ = gameBalanceBuilder_.build();
         }
-        result.backKey_ = backKey_;
-        result.dateTime_ = dateTime_;
-        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -6586,48 +6376,41 @@ public final class RunQuickly {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof runquickly.mode.RunQuickly.RunQuicklyResponse) {
-          return mergeFrom((runquickly.mode.RunQuickly.RunQuicklyResponse)other);
+        if (other instanceof runquickly.mode.RunQuickly.RunQuicklyBalanceResponse) {
+          return mergeFrom((runquickly.mode.RunQuickly.RunQuicklyBalanceResponse)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(runquickly.mode.RunQuickly.RunQuicklyResponse other) {
-        if (other == runquickly.mode.RunQuickly.RunQuicklyResponse.getDefaultInstance()) return this;
-        if (gameOverBuilder_ == null) {
-          if (!other.gameOver_.isEmpty()) {
-            if (gameOver_.isEmpty()) {
-              gameOver_ = other.gameOver_;
+      public Builder mergeFrom(runquickly.mode.RunQuickly.RunQuicklyBalanceResponse other) {
+        if (other == runquickly.mode.RunQuickly.RunQuicklyBalanceResponse.getDefaultInstance()) return this;
+        if (gameBalanceBuilder_ == null) {
+          if (!other.gameBalance_.isEmpty()) {
+            if (gameBalance_.isEmpty()) {
+              gameBalance_ = other.gameBalance_;
               bitField0_ = (bitField0_ & ~0x00000001);
             } else {
-              ensureGameOverIsMutable();
-              gameOver_.addAll(other.gameOver_);
+              ensureGameBalanceIsMutable();
+              gameBalance_.addAll(other.gameBalance_);
             }
             onChanged();
           }
         } else {
-          if (!other.gameOver_.isEmpty()) {
-            if (gameOverBuilder_.isEmpty()) {
-              gameOverBuilder_.dispose();
-              gameOverBuilder_ = null;
-              gameOver_ = other.gameOver_;
+          if (!other.gameBalance_.isEmpty()) {
+            if (gameBalanceBuilder_.isEmpty()) {
+              gameBalanceBuilder_.dispose();
+              gameBalanceBuilder_ = null;
+              gameBalance_ = other.gameBalance_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              gameOverBuilder_ = 
+              gameBalanceBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                   getGameOverFieldBuilder() : null;
+                   getGameBalanceFieldBuilder() : null;
             } else {
-              gameOverBuilder_.addAllMessages(other.gameOver_);
+              gameBalanceBuilder_.addAllMessages(other.gameBalance_);
             }
           }
-        }
-        if (!other.getBackKey().isEmpty()) {
-          backKey_ = other.backKey_;
-          onChanged();
-        }
-        if (other.getDateTime() != 0L) {
-          setDateTime(other.getDateTime());
         }
         onChanged();
         return this;
@@ -6641,11 +6424,11 @@ public final class RunQuickly {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        runquickly.mode.RunQuickly.RunQuicklyResponse parsedMessage = null;
+        runquickly.mode.RunQuickly.RunQuicklyBalanceResponse parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (runquickly.mode.RunQuickly.RunQuicklyResponse) e.getUnfinishedMessage();
+          parsedMessage = (runquickly.mode.RunQuickly.RunQuicklyBalanceResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -6656,371 +6439,244 @@ public final class RunQuickly {
       }
       private int bitField0_;
 
-      private java.util.List<runquickly.mode.RunQuickly.RunQuicklySeatOver> gameOver_ =
+      private java.util.List<runquickly.mode.RunQuickly.RunQuicklySeatBalance> gameBalance_ =
         java.util.Collections.emptyList();
-      private void ensureGameOverIsMutable() {
+      private void ensureGameBalanceIsMutable() {
         if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          gameOver_ = new java.util.ArrayList<runquickly.mode.RunQuickly.RunQuicklySeatOver>(gameOver_);
+          gameBalance_ = new java.util.ArrayList<runquickly.mode.RunQuickly.RunQuicklySeatBalance>(gameBalance_);
           bitField0_ |= 0x00000001;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          runquickly.mode.RunQuickly.RunQuicklySeatOver, runquickly.mode.RunQuickly.RunQuicklySeatOver.Builder, runquickly.mode.RunQuickly.RunQuicklySeatOverOrBuilder> gameOverBuilder_;
+          runquickly.mode.RunQuickly.RunQuicklySeatBalance, runquickly.mode.RunQuickly.RunQuicklySeatBalance.Builder, runquickly.mode.RunQuickly.RunQuicklySeatBalanceOrBuilder> gameBalanceBuilder_;
 
       /**
-       * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+       * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
        */
-      public java.util.List<runquickly.mode.RunQuickly.RunQuicklySeatOver> getGameOverList() {
-        if (gameOverBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(gameOver_);
+      public java.util.List<runquickly.mode.RunQuickly.RunQuicklySeatBalance> getGameBalanceList() {
+        if (gameBalanceBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(gameBalance_);
         } else {
-          return gameOverBuilder_.getMessageList();
+          return gameBalanceBuilder_.getMessageList();
         }
       }
       /**
-       * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+       * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
        */
-      public int getGameOverCount() {
-        if (gameOverBuilder_ == null) {
-          return gameOver_.size();
+      public int getGameBalanceCount() {
+        if (gameBalanceBuilder_ == null) {
+          return gameBalance_.size();
         } else {
-          return gameOverBuilder_.getCount();
+          return gameBalanceBuilder_.getCount();
         }
       }
       /**
-       * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+       * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
        */
-      public runquickly.mode.RunQuickly.RunQuicklySeatOver getGameOver(int index) {
-        if (gameOverBuilder_ == null) {
-          return gameOver_.get(index);
+      public runquickly.mode.RunQuickly.RunQuicklySeatBalance getGameBalance(int index) {
+        if (gameBalanceBuilder_ == null) {
+          return gameBalance_.get(index);
         } else {
-          return gameOverBuilder_.getMessage(index);
+          return gameBalanceBuilder_.getMessage(index);
         }
       }
       /**
-       * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+       * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
        */
-      public Builder setGameOver(
-          int index, runquickly.mode.RunQuickly.RunQuicklySeatOver value) {
-        if (gameOverBuilder_ == null) {
+      public Builder setGameBalance(
+          int index, runquickly.mode.RunQuickly.RunQuicklySeatBalance value) {
+        if (gameBalanceBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureGameOverIsMutable();
-          gameOver_.set(index, value);
+          ensureGameBalanceIsMutable();
+          gameBalance_.set(index, value);
           onChanged();
         } else {
-          gameOverBuilder_.setMessage(index, value);
+          gameBalanceBuilder_.setMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+       * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
        */
-      public Builder setGameOver(
-          int index, runquickly.mode.RunQuickly.RunQuicklySeatOver.Builder builderForValue) {
-        if (gameOverBuilder_ == null) {
-          ensureGameOverIsMutable();
-          gameOver_.set(index, builderForValue.build());
+      public Builder setGameBalance(
+          int index, runquickly.mode.RunQuickly.RunQuicklySeatBalance.Builder builderForValue) {
+        if (gameBalanceBuilder_ == null) {
+          ensureGameBalanceIsMutable();
+          gameBalance_.set(index, builderForValue.build());
           onChanged();
         } else {
-          gameOverBuilder_.setMessage(index, builderForValue.build());
+          gameBalanceBuilder_.setMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+       * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
        */
-      public Builder addGameOver(runquickly.mode.RunQuickly.RunQuicklySeatOver value) {
-        if (gameOverBuilder_ == null) {
+      public Builder addGameBalance(runquickly.mode.RunQuickly.RunQuicklySeatBalance value) {
+        if (gameBalanceBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureGameOverIsMutable();
-          gameOver_.add(value);
+          ensureGameBalanceIsMutable();
+          gameBalance_.add(value);
           onChanged();
         } else {
-          gameOverBuilder_.addMessage(value);
+          gameBalanceBuilder_.addMessage(value);
         }
         return this;
       }
       /**
-       * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+       * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
        */
-      public Builder addGameOver(
-          int index, runquickly.mode.RunQuickly.RunQuicklySeatOver value) {
-        if (gameOverBuilder_ == null) {
+      public Builder addGameBalance(
+          int index, runquickly.mode.RunQuickly.RunQuicklySeatBalance value) {
+        if (gameBalanceBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureGameOverIsMutable();
-          gameOver_.add(index, value);
+          ensureGameBalanceIsMutable();
+          gameBalance_.add(index, value);
           onChanged();
         } else {
-          gameOverBuilder_.addMessage(index, value);
+          gameBalanceBuilder_.addMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+       * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
        */
-      public Builder addGameOver(
-          runquickly.mode.RunQuickly.RunQuicklySeatOver.Builder builderForValue) {
-        if (gameOverBuilder_ == null) {
-          ensureGameOverIsMutable();
-          gameOver_.add(builderForValue.build());
+      public Builder addGameBalance(
+          runquickly.mode.RunQuickly.RunQuicklySeatBalance.Builder builderForValue) {
+        if (gameBalanceBuilder_ == null) {
+          ensureGameBalanceIsMutable();
+          gameBalance_.add(builderForValue.build());
           onChanged();
         } else {
-          gameOverBuilder_.addMessage(builderForValue.build());
+          gameBalanceBuilder_.addMessage(builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+       * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
        */
-      public Builder addGameOver(
-          int index, runquickly.mode.RunQuickly.RunQuicklySeatOver.Builder builderForValue) {
-        if (gameOverBuilder_ == null) {
-          ensureGameOverIsMutable();
-          gameOver_.add(index, builderForValue.build());
+      public Builder addGameBalance(
+          int index, runquickly.mode.RunQuickly.RunQuicklySeatBalance.Builder builderForValue) {
+        if (gameBalanceBuilder_ == null) {
+          ensureGameBalanceIsMutable();
+          gameBalance_.add(index, builderForValue.build());
           onChanged();
         } else {
-          gameOverBuilder_.addMessage(index, builderForValue.build());
+          gameBalanceBuilder_.addMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+       * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
        */
-      public Builder addAllGameOver(
-          java.lang.Iterable<? extends runquickly.mode.RunQuickly.RunQuicklySeatOver> values) {
-        if (gameOverBuilder_ == null) {
-          ensureGameOverIsMutable();
+      public Builder addAllGameBalance(
+          java.lang.Iterable<? extends runquickly.mode.RunQuickly.RunQuicklySeatBalance> values) {
+        if (gameBalanceBuilder_ == null) {
+          ensureGameBalanceIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
-              values, gameOver_);
+              values, gameBalance_);
           onChanged();
         } else {
-          gameOverBuilder_.addAllMessages(values);
+          gameBalanceBuilder_.addAllMessages(values);
         }
         return this;
       }
       /**
-       * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+       * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
        */
-      public Builder clearGameOver() {
-        if (gameOverBuilder_ == null) {
-          gameOver_ = java.util.Collections.emptyList();
+      public Builder clearGameBalance() {
+        if (gameBalanceBuilder_ == null) {
+          gameBalance_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000001);
           onChanged();
         } else {
-          gameOverBuilder_.clear();
+          gameBalanceBuilder_.clear();
         }
         return this;
       }
       /**
-       * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+       * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
        */
-      public Builder removeGameOver(int index) {
-        if (gameOverBuilder_ == null) {
-          ensureGameOverIsMutable();
-          gameOver_.remove(index);
+      public Builder removeGameBalance(int index) {
+        if (gameBalanceBuilder_ == null) {
+          ensureGameBalanceIsMutable();
+          gameBalance_.remove(index);
           onChanged();
         } else {
-          gameOverBuilder_.remove(index);
+          gameBalanceBuilder_.remove(index);
         }
         return this;
       }
       /**
-       * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+       * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
        */
-      public runquickly.mode.RunQuickly.RunQuicklySeatOver.Builder getGameOverBuilder(
+      public runquickly.mode.RunQuickly.RunQuicklySeatBalance.Builder getGameBalanceBuilder(
           int index) {
-        return getGameOverFieldBuilder().getBuilder(index);
+        return getGameBalanceFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+       * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
        */
-      public runquickly.mode.RunQuickly.RunQuicklySeatOverOrBuilder getGameOverOrBuilder(
+      public runquickly.mode.RunQuickly.RunQuicklySeatBalanceOrBuilder getGameBalanceOrBuilder(
           int index) {
-        if (gameOverBuilder_ == null) {
-          return gameOver_.get(index);  } else {
-          return gameOverBuilder_.getMessageOrBuilder(index);
+        if (gameBalanceBuilder_ == null) {
+          return gameBalance_.get(index);  } else {
+          return gameBalanceBuilder_.getMessageOrBuilder(index);
         }
       }
       /**
-       * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+       * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
        */
-      public java.util.List<? extends runquickly.mode.RunQuickly.RunQuicklySeatOverOrBuilder> 
-           getGameOverOrBuilderList() {
-        if (gameOverBuilder_ != null) {
-          return gameOverBuilder_.getMessageOrBuilderList();
+      public java.util.List<? extends runquickly.mode.RunQuickly.RunQuicklySeatBalanceOrBuilder> 
+           getGameBalanceOrBuilderList() {
+        if (gameBalanceBuilder_ != null) {
+          return gameBalanceBuilder_.getMessageOrBuilderList();
         } else {
-          return java.util.Collections.unmodifiableList(gameOver_);
+          return java.util.Collections.unmodifiableList(gameBalance_);
         }
       }
       /**
-       * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+       * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
        */
-      public runquickly.mode.RunQuickly.RunQuicklySeatOver.Builder addGameOverBuilder() {
-        return getGameOverFieldBuilder().addBuilder(
-            runquickly.mode.RunQuickly.RunQuicklySeatOver.getDefaultInstance());
+      public runquickly.mode.RunQuickly.RunQuicklySeatBalance.Builder addGameBalanceBuilder() {
+        return getGameBalanceFieldBuilder().addBuilder(
+            runquickly.mode.RunQuickly.RunQuicklySeatBalance.getDefaultInstance());
       }
       /**
-       * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+       * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
        */
-      public runquickly.mode.RunQuickly.RunQuicklySeatOver.Builder addGameOverBuilder(
+      public runquickly.mode.RunQuickly.RunQuicklySeatBalance.Builder addGameBalanceBuilder(
           int index) {
-        return getGameOverFieldBuilder().addBuilder(
-            index, runquickly.mode.RunQuickly.RunQuicklySeatOver.getDefaultInstance());
+        return getGameBalanceFieldBuilder().addBuilder(
+            index, runquickly.mode.RunQuickly.RunQuicklySeatBalance.getDefaultInstance());
       }
       /**
-       * <code>repeated .RunQuicklySeatOver gameOver = 1;</code>
+       * <code>repeated .RunQuicklySeatBalance gameBalance = 1;</code>
        */
-      public java.util.List<runquickly.mode.RunQuickly.RunQuicklySeatOver.Builder> 
-           getGameOverBuilderList() {
-        return getGameOverFieldBuilder().getBuilderList();
+      public java.util.List<runquickly.mode.RunQuickly.RunQuicklySeatBalance.Builder> 
+           getGameBalanceBuilderList() {
+        return getGameBalanceFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          runquickly.mode.RunQuickly.RunQuicklySeatOver, runquickly.mode.RunQuickly.RunQuicklySeatOver.Builder, runquickly.mode.RunQuickly.RunQuicklySeatOverOrBuilder> 
-          getGameOverFieldBuilder() {
-        if (gameOverBuilder_ == null) {
-          gameOverBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              runquickly.mode.RunQuickly.RunQuicklySeatOver, runquickly.mode.RunQuickly.RunQuicklySeatOver.Builder, runquickly.mode.RunQuickly.RunQuicklySeatOverOrBuilder>(
-                  gameOver_,
+          runquickly.mode.RunQuickly.RunQuicklySeatBalance, runquickly.mode.RunQuickly.RunQuicklySeatBalance.Builder, runquickly.mode.RunQuickly.RunQuicklySeatBalanceOrBuilder> 
+          getGameBalanceFieldBuilder() {
+        if (gameBalanceBuilder_ == null) {
+          gameBalanceBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              runquickly.mode.RunQuickly.RunQuicklySeatBalance, runquickly.mode.RunQuickly.RunQuicklySeatBalance.Builder, runquickly.mode.RunQuickly.RunQuicklySeatBalanceOrBuilder>(
+                  gameBalance_,
                   ((bitField0_ & 0x00000001) == 0x00000001),
                   getParentForChildren(),
                   isClean());
-          gameOver_ = null;
+          gameBalance_ = null;
         }
-        return gameOverBuilder_;
-      }
-
-      private java.lang.Object backKey_ = "";
-      /**
-       * <pre>
-       *回到大厅的码
-       * </pre>
-       *
-       * <code>string backKey = 2;</code>
-       */
-      public java.lang.String getBackKey() {
-        java.lang.Object ref = backKey_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          backKey_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <pre>
-       *回到大厅的码
-       * </pre>
-       *
-       * <code>string backKey = 2;</code>
-       */
-      public com.google.protobuf.ByteString
-          getBackKeyBytes() {
-        java.lang.Object ref = backKey_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          backKey_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <pre>
-       *回到大厅的码
-       * </pre>
-       *
-       * <code>string backKey = 2;</code>
-       */
-      public Builder setBackKey(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
-        backKey_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       *回到大厅的码
-       * </pre>
-       *
-       * <code>string backKey = 2;</code>
-       */
-      public Builder clearBackKey() {
-        
-        backKey_ = getDefaultInstance().getBackKey();
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       *回到大厅的码
-       * </pre>
-       *
-       * <code>string backKey = 2;</code>
-       */
-      public Builder setBackKeyBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        backKey_ = value;
-        onChanged();
-        return this;
-      }
-
-      private long dateTime_ ;
-      /**
-       * <pre>
-       *时间
-       * </pre>
-       *
-       * <code>uint64 dateTime = 3;</code>
-       */
-      public long getDateTime() {
-        return dateTime_;
-      }
-      /**
-       * <pre>
-       *时间
-       * </pre>
-       *
-       * <code>uint64 dateTime = 3;</code>
-       */
-      public Builder setDateTime(long value) {
-        
-        dateTime_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       *时间
-       * </pre>
-       *
-       * <code>uint64 dateTime = 3;</code>
-       */
-      public Builder clearDateTime() {
-        
-        dateTime_ = 0L;
-        onChanged();
-        return this;
+        return gameBalanceBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -7033,46 +6689,46 @@ public final class RunQuickly {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:RunQuicklyResponse)
+      // @@protoc_insertion_point(builder_scope:RunQuicklyBalanceResponse)
     }
 
-    // @@protoc_insertion_point(class_scope:RunQuicklyResponse)
-    private static final runquickly.mode.RunQuickly.RunQuicklyResponse DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:RunQuicklyBalanceResponse)
+    private static final runquickly.mode.RunQuickly.RunQuicklyBalanceResponse DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new runquickly.mode.RunQuickly.RunQuicklyResponse();
+      DEFAULT_INSTANCE = new runquickly.mode.RunQuickly.RunQuicklyBalanceResponse();
     }
 
-    public static runquickly.mode.RunQuickly.RunQuicklyResponse getDefaultInstance() {
+    public static runquickly.mode.RunQuickly.RunQuicklyBalanceResponse getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<RunQuicklyResponse>
-        PARSER = new com.google.protobuf.AbstractParser<RunQuicklyResponse>() {
-      public RunQuicklyResponse parsePartialFrom(
+    private static final com.google.protobuf.Parser<RunQuicklyBalanceResponse>
+        PARSER = new com.google.protobuf.AbstractParser<RunQuicklyBalanceResponse>() {
+      public RunQuicklyBalanceResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new RunQuicklyResponse(input, extensionRegistry);
+          return new RunQuicklyBalanceResponse(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<RunQuicklyResponse> parser() {
+    public static com.google.protobuf.Parser<RunQuicklyBalanceResponse> parser() {
       return PARSER;
     }
 
     @java.lang.Override
-    public com.google.protobuf.Parser<RunQuicklyResponse> getParserForType() {
+    public com.google.protobuf.Parser<RunQuicklyBalanceResponse> getParserForType() {
       return PARSER;
     }
 
-    public runquickly.mode.RunQuickly.RunQuicklyResponse getDefaultInstanceForType() {
+    public runquickly.mode.RunQuickly.RunQuicklyBalanceResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
-  public interface RunQuicklySeatOverOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:RunQuicklySeatOver)
+  public interface RunQuicklySeatBalanceOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:RunQuicklySeatBalance)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -7103,17 +6759,17 @@ public final class RunQuickly {
     int getWinCount();
   }
   /**
-   * Protobuf type {@code RunQuicklySeatOver}
+   * Protobuf type {@code RunQuicklySeatBalance}
    */
-  public  static final class RunQuicklySeatOver extends
+  public  static final class RunQuicklySeatBalance extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:RunQuicklySeatOver)
-      RunQuicklySeatOverOrBuilder {
-    // Use RunQuicklySeatOver.newBuilder() to construct.
-    private RunQuicklySeatOver(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:RunQuicklySeatBalance)
+      RunQuicklySeatBalanceOrBuilder {
+    // Use RunQuicklySeatBalance.newBuilder() to construct.
+    private RunQuicklySeatBalance(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private RunQuicklySeatOver() {
+    private RunQuicklySeatBalance() {
       iD_ = 0;
       winOrLose_ = 0;
       winCount_ = 0;
@@ -7124,7 +6780,7 @@ public final class RunQuickly {
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
     }
-    private RunQuicklySeatOver(
+    private RunQuicklySeatBalance(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -7172,14 +6828,14 @@ public final class RunQuickly {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return runquickly.mode.RunQuickly.internal_static_RunQuicklySeatOver_descriptor;
+      return runquickly.mode.RunQuickly.internal_static_RunQuicklySeatBalance_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return runquickly.mode.RunQuickly.internal_static_RunQuicklySeatOver_fieldAccessorTable
+      return runquickly.mode.RunQuickly.internal_static_RunQuicklySeatBalance_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              runquickly.mode.RunQuickly.RunQuicklySeatOver.class, runquickly.mode.RunQuickly.RunQuicklySeatOver.Builder.class);
+              runquickly.mode.RunQuickly.RunQuicklySeatBalance.class, runquickly.mode.RunQuickly.RunQuicklySeatBalance.Builder.class);
     }
 
     public static final int ID_FIELD_NUMBER = 1;
@@ -7271,10 +6927,10 @@ public final class RunQuickly {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof runquickly.mode.RunQuickly.RunQuicklySeatOver)) {
+      if (!(obj instanceof runquickly.mode.RunQuickly.RunQuicklySeatBalance)) {
         return super.equals(obj);
       }
-      runquickly.mode.RunQuickly.RunQuicklySeatOver other = (runquickly.mode.RunQuickly.RunQuicklySeatOver) obj;
+      runquickly.mode.RunQuickly.RunQuicklySeatBalance other = (runquickly.mode.RunQuickly.RunQuicklySeatBalance) obj;
 
       boolean result = true;
       result = result && (getID()
@@ -7304,69 +6960,69 @@ public final class RunQuickly {
       return hash;
     }
 
-    public static runquickly.mode.RunQuickly.RunQuicklySeatOver parseFrom(
+    public static runquickly.mode.RunQuickly.RunQuicklySeatBalance parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklySeatOver parseFrom(
+    public static runquickly.mode.RunQuickly.RunQuicklySeatBalance parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklySeatOver parseFrom(
+    public static runquickly.mode.RunQuickly.RunQuicklySeatBalance parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklySeatOver parseFrom(
+    public static runquickly.mode.RunQuickly.RunQuicklySeatBalance parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklySeatOver parseFrom(byte[] data)
+    public static runquickly.mode.RunQuickly.RunQuicklySeatBalance parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklySeatOver parseFrom(
+    public static runquickly.mode.RunQuickly.RunQuicklySeatBalance parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklySeatOver parseFrom(java.io.InputStream input)
+    public static runquickly.mode.RunQuickly.RunQuicklySeatBalance parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklySeatOver parseFrom(
+    public static runquickly.mode.RunQuickly.RunQuicklySeatBalance parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklySeatOver parseDelimitedFrom(java.io.InputStream input)
+    public static runquickly.mode.RunQuickly.RunQuicklySeatBalance parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklySeatOver parseDelimitedFrom(
+    public static runquickly.mode.RunQuickly.RunQuicklySeatBalance parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklySeatOver parseFrom(
+    public static runquickly.mode.RunQuickly.RunQuicklySeatBalance parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static runquickly.mode.RunQuickly.RunQuicklySeatOver parseFrom(
+    public static runquickly.mode.RunQuickly.RunQuicklySeatBalance parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -7378,7 +7034,7 @@ public final class RunQuickly {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(runquickly.mode.RunQuickly.RunQuicklySeatOver prototype) {
+    public static Builder newBuilder(runquickly.mode.RunQuickly.RunQuicklySeatBalance prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -7393,25 +7049,25 @@ public final class RunQuickly {
       return builder;
     }
     /**
-     * Protobuf type {@code RunQuicklySeatOver}
+     * Protobuf type {@code RunQuicklySeatBalance}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:RunQuicklySeatOver)
-        runquickly.mode.RunQuickly.RunQuicklySeatOverOrBuilder {
+        // @@protoc_insertion_point(builder_implements:RunQuicklySeatBalance)
+        runquickly.mode.RunQuickly.RunQuicklySeatBalanceOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return runquickly.mode.RunQuickly.internal_static_RunQuicklySeatOver_descriptor;
+        return runquickly.mode.RunQuickly.internal_static_RunQuicklySeatBalance_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return runquickly.mode.RunQuickly.internal_static_RunQuicklySeatOver_fieldAccessorTable
+        return runquickly.mode.RunQuickly.internal_static_RunQuicklySeatBalance_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                runquickly.mode.RunQuickly.RunQuicklySeatOver.class, runquickly.mode.RunQuickly.RunQuicklySeatOver.Builder.class);
+                runquickly.mode.RunQuickly.RunQuicklySeatBalance.class, runquickly.mode.RunQuickly.RunQuicklySeatBalance.Builder.class);
       }
 
-      // Construct using runquickly.mode.RunQuickly.RunQuicklySeatOver.newBuilder()
+      // Construct using runquickly.mode.RunQuickly.RunQuicklySeatBalance.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -7439,23 +7095,23 @@ public final class RunQuickly {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return runquickly.mode.RunQuickly.internal_static_RunQuicklySeatOver_descriptor;
+        return runquickly.mode.RunQuickly.internal_static_RunQuicklySeatBalance_descriptor;
       }
 
-      public runquickly.mode.RunQuickly.RunQuicklySeatOver getDefaultInstanceForType() {
-        return runquickly.mode.RunQuickly.RunQuicklySeatOver.getDefaultInstance();
+      public runquickly.mode.RunQuickly.RunQuicklySeatBalance getDefaultInstanceForType() {
+        return runquickly.mode.RunQuickly.RunQuicklySeatBalance.getDefaultInstance();
       }
 
-      public runquickly.mode.RunQuickly.RunQuicklySeatOver build() {
-        runquickly.mode.RunQuickly.RunQuicklySeatOver result = buildPartial();
+      public runquickly.mode.RunQuickly.RunQuicklySeatBalance build() {
+        runquickly.mode.RunQuickly.RunQuicklySeatBalance result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public runquickly.mode.RunQuickly.RunQuicklySeatOver buildPartial() {
-        runquickly.mode.RunQuickly.RunQuicklySeatOver result = new runquickly.mode.RunQuickly.RunQuicklySeatOver(this);
+      public runquickly.mode.RunQuickly.RunQuicklySeatBalance buildPartial() {
+        runquickly.mode.RunQuickly.RunQuicklySeatBalance result = new runquickly.mode.RunQuickly.RunQuicklySeatBalance(this);
         result.iD_ = iD_;
         result.winOrLose_ = winOrLose_;
         result.winCount_ = winCount_;
@@ -7490,16 +7146,16 @@ public final class RunQuickly {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof runquickly.mode.RunQuickly.RunQuicklySeatOver) {
-          return mergeFrom((runquickly.mode.RunQuickly.RunQuicklySeatOver)other);
+        if (other instanceof runquickly.mode.RunQuickly.RunQuicklySeatBalance) {
+          return mergeFrom((runquickly.mode.RunQuickly.RunQuicklySeatBalance)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(runquickly.mode.RunQuickly.RunQuicklySeatOver other) {
-        if (other == runquickly.mode.RunQuickly.RunQuicklySeatOver.getDefaultInstance()) return this;
+      public Builder mergeFrom(runquickly.mode.RunQuickly.RunQuicklySeatBalance other) {
+        if (other == runquickly.mode.RunQuickly.RunQuicklySeatBalance.getDefaultInstance()) return this;
         if (other.getID() != 0) {
           setID(other.getID());
         }
@@ -7521,11 +7177,11 @@ public final class RunQuickly {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        runquickly.mode.RunQuickly.RunQuicklySeatOver parsedMessage = null;
+        runquickly.mode.RunQuickly.RunQuicklySeatBalance parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (runquickly.mode.RunQuickly.RunQuicklySeatOver) e.getUnfinishedMessage();
+          parsedMessage = (runquickly.mode.RunQuickly.RunQuicklySeatBalance) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -7659,39 +7315,39 @@ public final class RunQuickly {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:RunQuicklySeatOver)
+      // @@protoc_insertion_point(builder_scope:RunQuicklySeatBalance)
     }
 
-    // @@protoc_insertion_point(class_scope:RunQuicklySeatOver)
-    private static final runquickly.mode.RunQuickly.RunQuicklySeatOver DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:RunQuicklySeatBalance)
+    private static final runquickly.mode.RunQuickly.RunQuicklySeatBalance DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new runquickly.mode.RunQuickly.RunQuicklySeatOver();
+      DEFAULT_INSTANCE = new runquickly.mode.RunQuickly.RunQuicklySeatBalance();
     }
 
-    public static runquickly.mode.RunQuickly.RunQuicklySeatOver getDefaultInstance() {
+    public static runquickly.mode.RunQuickly.RunQuicklySeatBalance getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<RunQuicklySeatOver>
-        PARSER = new com.google.protobuf.AbstractParser<RunQuicklySeatOver>() {
-      public RunQuicklySeatOver parsePartialFrom(
+    private static final com.google.protobuf.Parser<RunQuicklySeatBalance>
+        PARSER = new com.google.protobuf.AbstractParser<RunQuicklySeatBalance>() {
+      public RunQuicklySeatBalance parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new RunQuicklySeatOver(input, extensionRegistry);
+          return new RunQuicklySeatBalance(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<RunQuicklySeatOver> parser() {
+    public static com.google.protobuf.Parser<RunQuicklySeatBalance> parser() {
       return PARSER;
     }
 
     @java.lang.Override
-    public com.google.protobuf.Parser<RunQuicklySeatOver> getParserForType() {
+    public com.google.protobuf.Parser<RunQuicklySeatBalance> getParserForType() {
       return PARSER;
     }
 
-    public runquickly.mode.RunQuickly.RunQuicklySeatOver getDefaultInstanceForType() {
+    public runquickly.mode.RunQuickly.RunQuicklySeatBalance getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -8599,15 +8255,15 @@ public final class RunQuickly {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_RunQuicklyResult_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_RunQuicklyResponse_descriptor;
+    internal_static_RunQuicklyBalanceResponse_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_RunQuicklyResponse_fieldAccessorTable;
+      internal_static_RunQuicklyBalanceResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_RunQuicklySeatOver_descriptor;
+    internal_static_RunQuicklySeatBalance_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_RunQuicklySeatOver_fieldAccessorTable;
+      internal_static_RunQuicklySeatBalance_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_RunQuicklyReplayResponse_descriptor;
   private static final 
@@ -8628,23 +8284,22 @@ public final class RunQuickly {
       "eRules\030\004 \001(\r\"|\n\022RunQuicklyGameInfo\022&\n\005se" +
       "ats\030\001 \003(\0132\027.RunQuicklySeatGameInfo\022\021\n\tga" +
       "meCount\030\002 \001(\r\022\021\n\tgameTimes\030\003 \001(\r\022\030\n\020last" +
-      "PlayCardUser\030\004 \001(\r\"\201\001\n\026RunQuicklySeatGam" +
-      "eInfo\022\n\n\002ID\030\001 \001(\r\022\r\n\005cards\030\002 \003(\005\022\021\n\tcard" +
-      "sSize\030\003 \001(\r\022\017\n\007isRobot\030\004 \001(\010\022\024\n\014desktopC" +
-      "ards\030\005 \003(\005\022\022\n\npassStatus\030\006 \001(\010\"(\n\027RunQui",
-      "cklyStartResponse\022\r\n\005cards\030\001 \003(\005\"\"\n\022RunQ" +
-      "uicklyPlayCard\022\014\n\004card\030\001 \003(\005\"W\n\030RunQuick" +
-      "lyResultResponse\022!\n\006result\030\001 \003(\0132\021.RunQu" +
-      "icklyResult\022\030\n\020readyTimeCounter\030\002 \001(\005\"W\n" +
-      "\020RunQuicklyResult\022\n\n\002ID\030\001 \001(\r\022\024\n\014current" +
-      "Score\030\002 \001(\005\022\022\n\ntotalScore\030\003 \001(\005\022\r\n\005cards" +
-      "\030\004 \003(\005\"^\n\022RunQuicklyResponse\022%\n\010gameOver" +
-      "\030\001 \003(\0132\023.RunQuicklySeatOver\022\017\n\007backKey\030\002" +
-      " \001(\t\022\020\n\010dateTime\030\003 \001(\004\"E\n\022RunQuicklySeat" +
-      "Over\022\n\n\002ID\030\001 \001(\r\022\021\n\twinOrLose\030\002 \001(\005\022\020\n\010w",
-      "inCount\030\003 \001(\r\">\n\030RunQuicklyReplayRespons" +
-      "e\022\"\n\007history\030\001 \003(\0132\021.OperationHistoryB\021\n" +
-      "\017runquickly.modeb\006proto3"
+      "PlayCardUser\030\004 \001(\r\"p\n\026RunQuicklySeatGame" +
+      "Info\022\n\n\002ID\030\001 \001(\r\022\r\n\005cards\030\002 \003(\005\022\021\n\tcards" +
+      "Size\030\003 \001(\r\022\024\n\014desktopCards\030\004 \003(\005\022\022\n\npass" +
+      "Status\030\005 \001(\010\"(\n\027RunQuicklyStartResponse\022",
+      "\r\n\005cards\030\001 \003(\005\"\"\n\022RunQuicklyPlayCard\022\014\n\004" +
+      "card\030\001 \003(\005\"W\n\030RunQuicklyResultResponse\022!" +
+      "\n\006result\030\001 \003(\0132\021.RunQuicklyResult\022\030\n\020rea" +
+      "dyTimeCounter\030\002 \001(\005\"W\n\020RunQuicklyResult\022" +
+      "\n\n\002ID\030\001 \001(\r\022\024\n\014currentScore\030\002 \001(\005\022\022\n\ntot" +
+      "alScore\030\003 \001(\005\022\r\n\005cards\030\004 \003(\005\"H\n\031RunQuick" +
+      "lyBalanceResponse\022+\n\013gameBalance\030\001 \003(\0132\026" +
+      ".RunQuicklySeatBalance\"H\n\025RunQuicklySeat" +
+      "Balance\022\n\n\002ID\030\001 \001(\r\022\021\n\twinOrLose\030\002 \001(\005\022\020" +
+      "\n\010winCount\030\003 \001(\r\">\n\030RunQuicklyReplayResp",
+      "onse\022\"\n\007history\030\001 \003(\0132\021.OperationHistory" +
+      "B\021\n\017runquickly.modeb\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -8676,7 +8331,7 @@ public final class RunQuickly {
     internal_static_RunQuicklySeatGameInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_RunQuicklySeatGameInfo_descriptor,
-        new java.lang.String[] { "ID", "Cards", "CardsSize", "IsRobot", "DesktopCards", "PassStatus", });
+        new java.lang.String[] { "ID", "Cards", "CardsSize", "DesktopCards", "PassStatus", });
     internal_static_RunQuicklyStartResponse_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_RunQuicklyStartResponse_fieldAccessorTable = new
@@ -8701,17 +8356,17 @@ public final class RunQuickly {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_RunQuicklyResult_descriptor,
         new java.lang.String[] { "ID", "CurrentScore", "TotalScore", "Cards", });
-    internal_static_RunQuicklyResponse_descriptor =
+    internal_static_RunQuicklyBalanceResponse_descriptor =
       getDescriptor().getMessageTypes().get(7);
-    internal_static_RunQuicklyResponse_fieldAccessorTable = new
+    internal_static_RunQuicklyBalanceResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_RunQuicklyResponse_descriptor,
-        new java.lang.String[] { "GameOver", "BackKey", "DateTime", });
-    internal_static_RunQuicklySeatOver_descriptor =
+        internal_static_RunQuicklyBalanceResponse_descriptor,
+        new java.lang.String[] { "GameBalance", });
+    internal_static_RunQuicklySeatBalance_descriptor =
       getDescriptor().getMessageTypes().get(8);
-    internal_static_RunQuicklySeatOver_fieldAccessorTable = new
+    internal_static_RunQuicklySeatBalance_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_RunQuicklySeatOver_descriptor,
+        internal_static_RunQuicklySeatBalance_descriptor,
         new java.lang.String[] { "ID", "WinOrLose", "WinCount", });
     internal_static_RunQuicklyReplayResponse_descriptor =
       getDescriptor().getMessageTypes().get(9);
