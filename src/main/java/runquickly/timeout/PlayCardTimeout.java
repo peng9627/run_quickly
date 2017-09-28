@@ -84,6 +84,9 @@ public class PlayCardTimeout extends Thread {
                     }
                 }
                 if (null == cardType) {
+                    for (Seat seat1 : room.getSeats()) {
+                        seat1.setCanPlay(true);
+                    }
                     room.getHistoryList().add(new OperationHistory(userId, OperationHistoryType.PLAY_CARD, cardList));
                     room.setLastOperation(operationSeat.getUserId());
                     room.setOperationSeat(room.getNextSeat());
@@ -99,6 +102,9 @@ public class PlayCardTimeout extends Thread {
                             .forEach(seat1 -> RunQuicklyTcpService.userClients.get(seat1.getUserId()).send(response.build(), seat1.getUserId()));
                     if (0 == operationSeat.getCards().size()) {
                         room.gameOver(response, redisService);
+                        if (null != room.getRoomNo()) {
+                            redisService.addCache("room" + roomNo, JSON.toJSONString(room));
+                        }
                         return;
                     }
 
@@ -115,6 +121,9 @@ public class PlayCardTimeout extends Thread {
                     room.getSeats().stream().filter(seat1 -> RunQuicklyTcpService.userClients.containsKey(seat1.getUserId()))
                             .forEach(seat1 -> RunQuicklyTcpService.userClients.get(seat1.getUserId()).send(response.build(), seat1.getUserId()));
                 } else {
+                    if (1 == room.getGameRules() % 2) {
+                        operationSeat.setCanPlay(false);
+                    }
                     room.getHistoryList().add(new OperationHistory(userId, OperationHistoryType.PASS, null));
                     room.setLastOperation(operationSeat.getUserId());
                     room.setOperationSeat(room.getNextSeat());
@@ -139,8 +148,9 @@ public class PlayCardTimeout extends Thread {
                             .forEach(seat1 -> RunQuicklyTcpService.userClients.get(seat1.getUserId()).send(response.build(), seat1.getUserId()));
                 }
             }
-
-            redisService.addCache("room" + roomNo, JSON.toJSONString(room));
+            if (null != room.getRoomNo()) {
+                redisService.addCache("room" + roomNo, JSON.toJSONString(room));
+            }
             redisService.unlock("lock_room" + roomNo);
         }
     }

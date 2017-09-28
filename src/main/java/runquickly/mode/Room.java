@@ -196,7 +196,7 @@ public class Room {
                 List<Integer> cardList = new ArrayList<>();
                 for (int i = 0; i < 13; i++) {
                     int cardIndex = (int) (Math.random() * surplusCards.size());
-                    if (surplusCards.get(cardIndex) < min && 0 != cardIndex && surplusCards.get(cardIndex) < 100) {
+                    if (surplusCards.get(cardIndex) < min && 2 != surplusCards.get(cardIndex)) {
                         min = surplusCards.get(cardIndex);
                         operationSeat = seat.getSeatNo();
                     }
@@ -239,39 +239,138 @@ public class Room {
         int winScore = 0;
         Seat winSeat = null;
 
-        for (Seat seat : seats) {
-            if (seat.getCards().size() > 0) {
-                int score = 0;
-                int cardSize = seat.getCards().size();
-                if (cardSize == 13) {
-                    score = 30;
-                } else if (cardSize > 9) {
-                    score = cardSize * 2;
-                } else {
-                    score = cardSize;
+        int lastUser = 0;
+        boolean onlyLose = false;
+        OperationHistory operationHistory = historyList.get(historyList.size() - 1);
+        if (operationHistory.getCards().size() == 1 && historyList.size() > 1) {
+            OperationHistory operationHistory1 = historyList.get(historyList.size() - 2);
+            int playedCard = 0;
+            if (0 != operationHistory1.getHistoryType().compareTo(OperationHistoryType.PASS)) {
+                playedCard = operationHistory1.getCards().get(0);
+            }
+            lastUser = operationHistory1.getUserId();
+            int lastCard;
+            for (int i = historyList.size() - 3; i > historyList.size() - count - 2 && i > -1; i--) {
+                OperationHistory operationHistory2 = historyList.get(i);
+                if (0 == OperationHistoryType.PLAY_CARD.compareTo(operationHistory2.getHistoryType())) {
+                    if (1 == operationHistory2.getCards().size()) {
+                        lastCard = operationHistory2.getCards().get(0);
+                        for (Seat seat : seats) {
+                            if (seat.getUserId() == lastUser) {
+                                List<Integer> tempCards = new ArrayList<>();
+                                tempCards.addAll(seat.getCards());
+                                tempCards.sort(new Comparator<Integer>() {
+                                    @Override
+                                    public int compare(Integer o1, Integer o2) {
+                                        if (o1 == 2) {
+                                            o1 = 15;
+                                        }
+                                        if (o2 == 2) {
+                                            o2 = 15;
+                                        }
+                                        return o1.intValue() > o2 ? 1 : -1;
+                                    }
+                                });
+                                if (tempCards.get(tempCards.size() - 1) % 100 > playedCard % 100 && tempCards.get(tempCards.size() - 1) % 100 > lastCard) {
+                                    onlyLose = true;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    break;
                 }
-                score *= multiple;
-                winScore += score;
-
-                seat.setScore(seat.getScore() - score);
-
-                RunQuickly.RunQuicklyResult result = RunQuickly.RunQuicklyResult.newBuilder().setID(seat.getUserId())
-                        .addAllCards(seat.getCards()).setCurrentScore(-score).setTotalScore(seat.getScore()).build();
-                resultResponse.addResult(result);
-
-                SeatRecord seatRecord = new SeatRecord();
-                seatRecord.setNickname(seat.getNickname());
-                seatRecord.setHead(seat.getHead());
-                seatRecord.setUserId(seat.getUserId());
-                seatRecord.getInitialCards().addAll(seat.getInitialCards());
-                seatRecord.getCards().addAll(seat.getCards());
-                seatRecord.setWinOrLose(0 - score);
-                seatRecords.add(seatRecord);
-
-            } else {
-                winSeat = seat;
             }
         }
+
+        if (!onlyLose) {
+            for (Seat seat : seats) {
+                if (seat.getCards().size() > 0) {
+                    int score = 0;
+                    int cardSize = seat.getCards().size();
+                    if (cardSize == 13) {
+                        score = 30;
+                    } else if (cardSize > 9) {
+                        score = cardSize * 2;
+                    } else {
+                        score = cardSize;
+                    }
+                    score *= multiple;
+                    winScore += score;
+
+                    seat.setScore(seat.getScore() - score);
+
+                    RunQuickly.RunQuicklyResult result = RunQuickly.RunQuicklyResult.newBuilder().setID(seat.getUserId())
+                            .addAllCards(seat.getCards()).setCurrentScore(-score).setTotalScore(seat.getScore()).build();
+                    resultResponse.addResult(result);
+
+                    SeatRecord seatRecord = new SeatRecord();
+                    seatRecord.setNickname(seat.getNickname());
+                    seatRecord.setHead(seat.getHead());
+                    seatRecord.setUserId(seat.getUserId());
+                    seatRecord.getInitialCards().addAll(seat.getInitialCards());
+                    seatRecord.getCards().addAll(seat.getCards());
+                    seatRecord.setWinOrLose(-score);
+                    seatRecords.add(seatRecord);
+
+                } else {
+                    winSeat = seat;
+                }
+            }
+        } else {
+            for (Seat seat : seats) {
+                if (seat.getCards().size() > 0) {
+                    int score = 0;
+                    int cardSize = seat.getCards().size();
+                    if (cardSize == 13) {
+                        score = 30;
+                    } else if (cardSize > 9) {
+                        score = cardSize * 2;
+                    } else {
+                        score = cardSize;
+                    }
+                    score *= multiple;
+                    winScore += score;
+
+                    if (seat.getUserId() != lastUser) {
+                        RunQuickly.RunQuicklyResult result = RunQuickly.RunQuicklyResult.newBuilder().setID(seat.getUserId())
+                                .addAllCards(seat.getCards()).setTotalScore(seat.getScore()).build();
+                        resultResponse.addResult(result);
+
+                        SeatRecord seatRecord = new SeatRecord();
+                        seatRecord.setNickname(seat.getNickname());
+                        seatRecord.setHead(seat.getHead());
+                        seatRecord.setUserId(seat.getUserId());
+                        seatRecord.getInitialCards().addAll(seat.getInitialCards());
+                        seatRecord.getCards().addAll(seat.getCards());
+                        seatRecord.setWinOrLose(0);
+                        seatRecords.add(seatRecord);
+
+                    }
+                } else {
+                    winSeat = seat;
+                }
+            }
+            for (Seat seat : seats) {
+                if (seat.getUserId() == lastUser) {
+                    seat.setScore(seat.getScore() - winScore);
+                    RunQuickly.RunQuicklyResult result = RunQuickly.RunQuicklyResult.newBuilder().setID(seat.getUserId())
+                            .addAllCards(seat.getCards()).setCurrentScore(-winScore).setTotalScore(seat.getScore()).build();
+                    resultResponse.addResult(result);
+
+                    SeatRecord seatRecord = new SeatRecord();
+                    seatRecord.setNickname(seat.getNickname());
+                    seatRecord.setHead(seat.getHead());
+                    seatRecord.setUserId(seat.getUserId());
+                    seatRecord.getInitialCards().addAll(seat.getInitialCards());
+                    seatRecord.getCards().addAll(seat.getCards());
+                    seatRecord.setWinOrLose(-winScore);
+                    seatRecords.add(seatRecord);
+                    break;
+                }
+            }
+        }
+
         if (null == winSeat) {
             return;
         }
@@ -293,10 +392,34 @@ public class Room {
         record.getSeatRecordList().addAll(seatRecords);
         recordList.add(record);
 
-        response.setOperationType(GameBase.OperationType.RESULT).setData(resultResponse.build().toByteString());
-        seats.stream().filter(seat -> RunQuicklyTcpService.userClients.containsKey(seat.getUserId()))
-                .forEach(seat -> RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.build(), seat.getUserId()));
-
+        if (redisService.exists("room_match" + roomNo)) {
+            GameBase.ScoreResponse.Builder scoreResponse = GameBase.ScoreResponse.newBuilder();
+            for (RunQuickly.RunQuicklyResult.Builder userResult : resultResponse.getResultBuilderList()) {
+                if (RunQuicklyTcpService.userClients.containsKey(userResult.getID())) {
+                    GameBase.MatchResult matchResult;
+                    if (gameCount != gameTimes) {
+                        matchResult = GameBase.MatchResult.newBuilder().setResult(0).setCurrentScore(userResult.getCurrentScore())
+                                .setTotalScore(userResult.getTotalScore()).build();
+                    } else {
+                        matchResult = GameBase.MatchResult.newBuilder().setResult(2).setCurrentScore(userResult.getCurrentScore())
+                                .setTotalScore(userResult.getTotalScore()).build();
+                    }
+                    RunQuicklyTcpService.userClients.get(userResult.getID()).send(response.setOperationType(GameBase.OperationType.MATCH_RESULT)
+                            .setData(matchResult.toByteString()).build(), userResult.getID());
+                }
+                scoreResponse.addScoreResult(GameBase.ScoreResult.newBuilder().setID(userResult.getID()).setScore(userResult.getTotalScore()));
+            }
+            for (Seat seat : seats) {
+                if (RunQuicklyTcpService.userClients.containsKey(seat.getUserId())) {
+                    RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.setOperationType(GameBase.OperationType.MATCH_SCORE)
+                            .setData(scoreResponse.build().toByteString()).build(), seat.getUserId());
+                }
+            }
+        } else {
+            response.setOperationType(GameBase.OperationType.RESULT).setData(resultResponse.build().toByteString());
+            seats.stream().filter(seat -> RunQuicklyTcpService.userClients.containsKey(seat.getUserId()))
+                    .forEach(seat -> RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.build(), seat.getUserId()));
+        }
         clear();
 
         //结束房间
@@ -346,24 +469,24 @@ public class Room {
                             matchUser.setScore(seat.getScore());
                         }
                     }
-                    if (RunQuicklyTcpService.userClients.containsKey(seat.getUserId())) {
-                        RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.setOperationType(GameBase.OperationType.ROOM_INFO).clearData().build(), seat.getUserId());
-                        GameBase.RoomSeatsInfo.Builder roomSeatsInfo = GameBase.RoomSeatsInfo.newBuilder();
-                        GameBase.SeatResponse.Builder seatResponse = GameBase.SeatResponse.newBuilder();
-                        seatResponse.setSeatNo(1);
-                        seatResponse.setID(seat.getUserId());
-                        seatResponse.setScore(seat.getScore());
-                        seatResponse.setReady(false);
-                        seatResponse.setIp(seat.getIp());
-                        seatResponse.setGameCount(seat.getGamecount());
-                        seatResponse.setNickname(seat.getNickname());
-                        seatResponse.setHead(seat.getHead());
-                        seatResponse.setSex(seat.isSex());
-                        seatResponse.setOffline(false);
-                        seatResponse.setIsRobot(seat.isRobot());
-                        roomSeatsInfo.addSeats(seatResponse.build());
-                        RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.setOperationType(GameBase.OperationType.SEAT_INFO).setData(roomSeatsInfo.build().toByteString()).build(), seat.getUserId());
-                    }
+//                    if (RunQuicklyTcpService.userClients.containsKey(seat.getUserId())) {
+//                        RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.setOperationType(GameBase.OperationType.ROOM_INFO).clearData().build(), seat.getUserId());
+//                        GameBase.RoomSeatsInfo.Builder roomSeatsInfo = GameBase.RoomSeatsInfo.newBuilder();
+//                        GameBase.SeatResponse.Builder seatResponse = GameBase.SeatResponse.newBuilder();
+//                        seatResponse.setSeatNo(1);
+//                        seatResponse.setID(seat.getUserId());
+//                        seatResponse.setScore(seat.getScore());
+//                        seatResponse.setReady(false);
+//                        seatResponse.setIp(seat.getIp());
+//                        seatResponse.setGameCount(seat.getGamecount());
+//                        seatResponse.setNickname(seat.getNickname());
+//                        seatResponse.setHead(seat.getHead());
+//                        seatResponse.setSex(seat.isSex());
+//                        seatResponse.setOffline(false);
+//                        seatResponse.setIsRobot(seat.isRobot());
+//                        roomSeatsInfo.addSeats(seatResponse.build());
+//                        RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.setOperationType(GameBase.OperationType.SEAT_INFO).setData(roomSeatsInfo.build().toByteString()).build(), seat.getUserId());
+//                    }
                 }
 
                 //用户对应分数
@@ -394,25 +517,31 @@ public class Room {
                                     if (seat.getScore() < matchInfo.getMatchEliminateScore() && matchUsers.size() > arena.getCount() / 2) {
                                         matchUsers.remove(matchUser);
 
-                                        matchResult.setResult(3);
+                                        matchResult.setResult(3).setTotalScore(seat.getScore()).setCurrentScore(-1);
                                         response.setOperationType(GameBase.OperationType.MATCH_RESULT).setData(matchResult.build().toByteString());
                                         if (RunQuicklyTcpService.userClients.containsKey(matchUser.getUserId())) {
                                             RunQuicklyTcpService.userClients.get(matchUser.getUserId()).send(response.build(), matchUser.getUserId());
                                         }
-                                        response.setOperationType(GameBase.OperationType.MATCH_OVER).setData(GameBase.MatchOver.newBuilder()
-                                                .setRanking(matchUsers.size()).build().toByteString());
+                                        response.setOperationType(GameBase.OperationType.MATCH_BALANCE).setData(GameBase.MatchBalance.newBuilder()
+                                                .setRanking(matchUsers.size()).setTotalScore(matchUser.getScore()).build().toByteString());
                                         if (RunQuicklyTcpService.userClients.containsKey(matchUser.getUserId())) {
                                             RunQuicklyTcpService.userClients.get(matchUser.getUserId()).send(response.build(), matchUser.getUserId());
+                                            GameBase.OverResponse.Builder over = GameBase.OverResponse.newBuilder();
+                                            String uuid = UUID.randomUUID().toString().replace("-", "");
+                                            while (redisService.exists(uuid)) {
+                                                uuid = UUID.randomUUID().toString().replace("-", "");
+                                            }
+                                            redisService.addCache("backkey" + uuid, seat.getUserId() + "", 1800);
+                                            over.setBackKey(uuid);
+                                            over.setDateTime(new Date().getTime());
+                                            response.setOperationType(GameBase.OperationType.OVER).setData(over.build().toByteString());
+                                            RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.build(), seat.getUserId());
                                         }
+
                                         redisService.delete("reconnect" + seat.getUserId());
                                     } else {
-                                        matchResult.setResult(2);
-                                        response.setOperationType(GameBase.OperationType.MATCH_RESULT).setData(matchResult.build().toByteString());
-                                        if (RunQuicklyTcpService.userClients.containsKey(matchUser.getUserId())) {
-                                            RunQuicklyTcpService.userClients.get(matchUser.getUserId()).send(response.build(), matchUser.getUserId());
-                                        }
                                         thisWait.add(matchUser);
-                                        redisService.addCache("reconnect" + seat.getUserId(), "sangong," + matchNo);
+                                        redisService.addCache("reconnect" + seat.getUserId(), "run_quickly," + matchNo);
                                     }
                                     break;
                                 }
@@ -441,6 +570,7 @@ public class Room {
                             matchInfo.setStatus(2);
                             matchData.setStatus(2);
                             matchData.setCurrentCount(matchUsers.size());
+                            matchData.setRound(1);
                             while (4 <= users.size()) {
                                 rooms.add(matchInfo.addRoom(matchNo, 2, redisService, users.subList(0, 4), userIdScore, response, matchData));
                             }
@@ -462,6 +592,9 @@ public class Room {
                                 if (0 == usersResponse.getCode()) {
                                     users = usersResponse.getData();
                                 }
+                                matchData.setStatus(1);
+                                matchData.setCurrentCount(matchUsers.size());
+                                matchData.setRound(1);
                                 rooms.add(matchInfo.addRoom(matchNo, 1, redisService, users, userIdScore, response, matchData));
                             }
                         }
@@ -469,16 +602,11 @@ public class Room {
                     case 2:
                     case 3:
                         for (Seat seat : seats) {
-                            matchResult.setResult(2);
-                            response.setOperationType(GameBase.OperationType.MATCH_RESULT).setData(matchResult.build().toByteString());
-                            if (RunQuicklyTcpService.userClients.containsKey(seat.getUserId())) {
-                                RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.build(), seat.getUserId());
-                            }
-                            redisService.addCache("reconnect" + seat.getUserId(), "sangong," + matchNo);
+                            redisService.addCache("reconnect" + seat.getUserId(), "run_quickly," + matchNo);
                         }
                         if (0 == rooms.size()) {
                             matchInfo.setStatus(matchInfo.getStatus() + 1);
-                            matchData.setStatus(matchInfo.getStatus());
+                            matchData.setStatus(2);
 
                             List<User> users = new ArrayList<>();
                             StringBuilder stringBuilder = new StringBuilder();
@@ -494,6 +622,7 @@ public class Room {
                                 users = usersResponse.getData();
                             }
                             matchData.setCurrentCount(matchUsers.size());
+                            matchData.setRound(matchInfo.getStatus() - 1);
                             while (4 <= users.size()) {
                                 rooms.add(matchInfo.addRoom(matchNo, 2, redisService, users.subList(0, 4), userIdScore, response, matchData));
                             }
@@ -501,16 +630,11 @@ public class Room {
                         break;
                     case 4:
                         for (Seat seat : seats) {
-                            matchResult.setResult(2);
-                            response.setOperationType(GameBase.OperationType.MATCH_RESULT).setData(matchResult.build().toByteString());
-                            if (RunQuicklyTcpService.userClients.containsKey(seat.getUserId())) {
-                                RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.build(), seat.getUserId());
-                            }
                             MatchUser matchUser = new MatchUser();
                             matchUser.setUserId(seat.getUserId());
                             matchUser.setScore(seat.getScore());
                             waitUsers.add(matchUser);
-                            redisService.addCache("reconnect" + seat.getUserId(), "sangong," + matchNo);
+                            redisService.addCache("reconnect" + seat.getUserId(), "run_quickly," + matchNo);
                         }
 
                         waitUsers.sort(new Comparator<MatchUser>() {
@@ -522,9 +646,19 @@ public class Room {
                         while (waitUsers.size() > 4) {
                             MatchUser matchUser = waitUsers.remove(waitUsers.size() - 1);
 
-                            response.setOperationType(GameBase.OperationType.MATCH_OVER).setData(GameBase.MatchOver.newBuilder()
-                                    .setRanking(matchUsers.size()).build().toByteString());
+                            response.setOperationType(GameBase.OperationType.MATCH_BALANCE).setData(GameBase.MatchBalance.newBuilder()
+                                    .setRanking(matchUsers.size()).setTotalScore(matchUser.getScore()).build().toByteString());
                             if (RunQuicklyTcpService.userClients.containsKey(matchUser.getUserId())) {
+                                RunQuicklyTcpService.userClients.get(matchUser.getUserId()).send(response.build(), matchUser.getUserId());
+                                GameBase.OverResponse.Builder over = GameBase.OverResponse.newBuilder();
+                                String uuid = UUID.randomUUID().toString().replace("-", "");
+                                while (redisService.exists(uuid)) {
+                                    uuid = UUID.randomUUID().toString().replace("-", "");
+                                }
+                                redisService.addCache("backkey" + uuid, matchUser.getUserId() + "", 1800);
+                                over.setBackKey(uuid);
+                                over.setDateTime(new Date().getTime());
+                                response.setOperationType(GameBase.OperationType.OVER).setData(over.build().toByteString());
                                 RunQuicklyTcpService.userClients.get(matchUser.getUserId()).send(response.build(), matchUser.getUserId());
                             }
                             redisService.delete("reconnect" + matchUser.getUserId());
@@ -534,14 +668,15 @@ public class Room {
 
                             matchUsers.clear();
                             matchUsers.addAll(waitUsers);
+                            waitUsers.clear();
 
                             matchInfo.setStatus(5);
-                            matchData.setStatus(5);
+                            matchData.setStatus(3);
 
                             List<User> users = new ArrayList<>();
                             StringBuilder stringBuilder = new StringBuilder();
-                            for (int i = 0; i < matchUsers.size(); i++) {
-                                stringBuilder.append(",").append(matchUsers.get(i).getUserId());
+                            for (MatchUser matchUser : matchUsers) {
+                                stringBuilder.append(",").append(matchUser.getUserId());
                             }
                             jsonObject.clear();
                             jsonObject.put("userIds", stringBuilder.toString().substring(1));
@@ -552,6 +687,7 @@ public class Room {
                                 users = usersResponse.getData();
                             }
                             matchData.setCurrentCount(matchUsers.size());
+                            matchData.setRound(1);
                             while (4 == users.size()) {
                                 rooms.add(matchInfo.addRoom(matchNo, 2, redisService, users, userIdScore, response, matchData));
                             }
@@ -565,13 +701,24 @@ public class Room {
                             }
                         });
                         for (int i = 0; i < matchUsers.size(); i++) {
-                            matchResult.setResult(i == 0 ? 1 : 3);
+                            matchResult.setResult(i == 0 ? 1 : 3).setTotalScore(matchUsers.get(i).getScore()).setCurrentScore(-1);
                             response.setOperationType(GameBase.OperationType.MATCH_RESULT).setData(matchResult.build().toByteString());
                             if (RunQuicklyTcpService.userClients.containsKey(matchUsers.get(i).getUserId())) {
                                 RunQuicklyTcpService.userClients.get(matchUsers.get(i).getUserId()).send(response.build(), matchUsers.get(i).getUserId());
                             }
-                            response.setOperationType(GameBase.OperationType.MATCH_OVER).setData(GameBase.MatchOver.newBuilder().setRanking(i + 1).build().toByteString());
+                            response.setOperationType(GameBase.OperationType.MATCH_BALANCE).setData(GameBase.MatchBalance.newBuilder()
+                                    .setRanking(i + 1).setTotalScore(matchUsers.get(i).getScore()).build().toByteString());
                             if (RunQuicklyTcpService.userClients.containsKey(matchUsers.get(i).getUserId())) {
+                                RunQuicklyTcpService.userClients.get(matchUsers.get(i).getUserId()).send(response.build(), matchUsers.get(i).getUserId());
+                                GameBase.OverResponse.Builder over = GameBase.OverResponse.newBuilder();
+                                String uuid = UUID.randomUUID().toString().replace("-", "");
+                                while (redisService.exists(uuid)) {
+                                    uuid = UUID.randomUUID().toString().replace("-", "");
+                                }
+                                redisService.addCache("backkey" + uuid, matchUsers.get(i).getUserId() + "", 1800);
+                                over.setBackKey(uuid);
+                                over.setDateTime(new Date().getTime());
+                                response.setOperationType(GameBase.OperationType.OVER).setData(over.build().toByteString());
                                 RunQuicklyTcpService.userClients.get(matchUsers.get(i).getUserId()).send(response.build(), matchUsers.get(i).getUserId());
                             }
                         }
@@ -579,6 +726,7 @@ public class Room {
                         break;
                 }
                 if (0 < matchInfo.getStatus()) {
+                    matchInfo.setMatchUsers(matchUsers);
                     matchInfo.setRooms(rooms);
                     matchInfo.setWaitUsers(waitUsers);
                     redisService.addCache("match_info" + matchNo, JSON.toJSONString(matchInfo));
@@ -692,6 +840,7 @@ public class Room {
                 .setBaseScore(baseScore).setCount(count).setGameTimes(gameTimes)
                 .setGameRules(gameRules).build();
         roomCardIntoResponseBuilder.setError(GameBase.ErrorCode.SUCCESS).setData(intoResponse.toByteString());
+        roomCardIntoResponseBuilder.setGameType(GameBase.GameType.RUN_QUICKLY);
         response.setOperationType(GameBase.OperationType.ROOM_INFO).setData(roomCardIntoResponseBuilder.build().toByteString());
         if (RunQuicklyTcpService.userClients.containsKey(userId)) {
             RunQuicklyTcpService.userClients.get(userId).send(response.build(), userId);
@@ -915,7 +1064,9 @@ public class Room {
                             break;
                         }
                     }
-
+                    if (redisService.exists("room_match" + roomNo)) {
+                        new PlayCardTimeout(operationSeat.getUserId(), roomNo, historyList.size(), gameCount, redisService).start();
+                    }
                     GameBase.RoundResponse roundResponse = GameBase.RoundResponse.newBuilder()
                             .setTimeCounter(redisService.exists("room_match" + roomNo) ? 8 : 0).setID(operationSeat.getUserId()).build();
                     response.setOperationType(GameBase.OperationType.ROUND).setData(roundResponse.toByteString());

@@ -13,9 +13,12 @@ public class Constant {
     public static String gamerecordCreateUrl = "/gamerecord/create";
     public static String moneyDetailedCreate = "/money_detailed/create";
 
-    public static int readyTimeout = 5000;
+    public static int readyTimeout = 10000;
     public static int playCardTimeout = 18000;
     public static int dissolve = 180000;
     public static int messageTimeout = 300000;
+    //TODO 少一个0
+    public static int matchEliminateScoreTimeout = 12000;
+    public static int matchEliminateScore = 100;
 
 }

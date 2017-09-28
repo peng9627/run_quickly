@@ -10,6 +10,7 @@ import runquickly.constant.Constant;
 import runquickly.mode.*;
 import runquickly.redis.RedisService;
 import runquickly.timeout.DissolveTimeout;
+import runquickly.timeout.MatchScoreTimeout;
 import runquickly.timeout.ReadyTimeout;
 import runquickly.utils.HttpUtil;
 import runquickly.utils.LoggerUtil;
@@ -26,7 +27,6 @@ public class RunQuicklyClient {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     public int userId;
     private RedisService redisService;
-    private String roomNo;
 
     private GameBase.BaseConnection.Builder response;
     private MessageReceive messageReceive;
@@ -42,10 +42,10 @@ public class RunQuicklyClient {
             synchronized (RunQuicklyTcpService.userClients) {
                 if (RunQuicklyTcpService.userClients.containsKey(userId) && messageReceive == RunQuicklyTcpService.userClients.get(userId)) {
                     RunQuicklyTcpService.userClients.remove(userId);
-                    if (redisService.exists("room" + roomNo)) {
-                        while (!redisService.lock("lock_room" + roomNo)) {
+                    if (redisService.exists("room" + messageReceive.roomNo)) {
+                        while (!redisService.lock("lock_room" + messageReceive.roomNo)) {
                         }
-                        Room room = JSON.parseObject(redisService.getCache("room" + roomNo), Room.class);
+                        Room room = JSON.parseObject(redisService.getCache("room" + messageReceive.roomNo), Room.class);
                         if (null != room) {
                             for (Seat seat : room.getSeats()) {
                                 if (seat.getUserId() == userId) {
@@ -55,9 +55,9 @@ public class RunQuicklyClient {
                             }
                             room.sendSeatInfo(response);
 
-                            redisService.addCache("room" + roomNo, JSON.toJSONString(room));
+                            redisService.addCache("room" + messageReceive.roomNo, JSON.toJSONString(room));
                         }
-                        redisService.unlock("lock_room" + roomNo);
+                        redisService.unlock("lock_room" + messageReceive.roomNo);
                     }
                 }
             }
@@ -117,7 +117,7 @@ public class RunQuicklyClient {
                     GameBase.RoomCardIntoRequest intoRequest = GameBase.RoomCardIntoRequest.parseFrom(request.getData());
                     userId = intoRequest.getID();
 
-                    roomNo = intoRequest.getRoomNo();
+                    messageReceive.roomNo = intoRequest.getRoomNo();
                     if (RunQuicklyTcpService.userClients.containsKey(userId) && RunQuicklyTcpService.userClients.get(userId) != messageReceive) {
                         RunQuicklyTcpService.userClients.get(userId).close();
                     }
@@ -130,52 +130,16 @@ public class RunQuicklyClient {
                     }
                     RunQuicklyTcpService.userClients.put(userId, messageReceive);
                     GameBase.RoomCardIntoResponse.Builder roomCardIntoResponseBuilder = GameBase.RoomCardIntoResponse.newBuilder();
-                    roomCardIntoResponseBuilder.setGameType(GameBase.GameType.RUN_QUICKLY).setRoomNo(roomNo);
-                    if (redisService.exists("room" + roomNo)) {
-                        while (!redisService.lock("lock_room" + roomNo)) {
+                    roomCardIntoResponseBuilder.setGameType(GameBase.GameType.RUN_QUICKLY).setRoomNo(messageReceive.roomNo);
+                    if (redisService.exists("room" + messageReceive.roomNo)) {
+                        while (!redisService.lock("lock_room" + messageReceive.roomNo)) {
                         }
-                        redisService.addCache("reconnect" + userId, "run_quickly," + roomNo);
+                        redisService.addCache("reconnect" + userId, "run_quickly," + messageReceive.roomNo);
 
-                        //是否竞技场
-                        if (redisService.exists("room_match" + roomNo)) {
-                            String matchNo = redisService.getCache("room_match" + roomNo);
-                            if (redisService.exists("match_info" + matchNo)) {
-                                while (!redisService.lock("lock_match_info" + matchNo)) {
-                                }
-                                MatchInfo matchInfo = JSON.parseObject(redisService.getCache("match_info" + matchNo), MatchInfo.class);
-                                Arena arena = matchInfo.getArena();
-                                GameBase.MatchInfo matchInfoResponse = GameBase.MatchInfo.newBuilder().setArenaType(arena.getArenaType())
-                                        .setCount(arena.getCount()).setEntryFee(arena.getEntryFee()).setName(arena.getName())
-                                        .setReward(arena.getReward()).build();
-                                messageReceive.send(response.setOperationType(GameBase.OperationType.MATCH_INFO)
-                                        .setData(matchInfoResponse.toByteString()).build(), userId);
-
-                                int status = matchInfo.getStatus();
-                                if (status > 2) {
-                                    status = status == 5 ? 3 : 2;
-                                }
-                                GameBase.MatchData matchData = GameBase.MatchData.newBuilder()
-                                        .setCurrentCount(matchInfo.getMatchUsers().size())
-                                        .setStatus(status).build();
-                                messageReceive.send(response.setOperationType(GameBase.OperationType.MATCH_DATA)
-                                        .setData(matchData.toByteString()).build(), userId);
-
-                                if (!matchInfo.isStart()) {
-                                    List<Integer> roomNos = matchInfo.getRooms();
-                                    for (Integer roomNo1 : roomNos) {
-                                        new ReadyTimeout(roomNo1, redisService, 0).start();
-                                    }
-                                }
-                                matchInfo.setStart(true);
-                                redisService.addCache("match_info" + matchNo, JSON.toJSONString(matchInfo));
-                                redisService.unlock("lock_match_info" + matchNo);
-                            }
-                        }
-
-                        Room room = JSON.parseObject(redisService.getCache("room" + roomNo), Room.class);
+                        Room room = JSON.parseObject(redisService.getCache("room" + messageReceive.roomNo), Room.class);
                         room.setRoomOwner(room.getRoomOwner());
                         roomCardIntoResponseBuilder.setStarted(0 != room.getGameStatus().compareTo(GameStatus.READYING) && 0 != room.getGameStatus().compareTo(GameStatus.WAITING));
-                        if (0 == room.getGameStatus().compareTo(GameStatus.READYING) && redisService.exists("room_match" + roomNo)) {
+                        if (0 == room.getGameStatus().compareTo(GameStatus.READYING) && redisService.exists("room_match" + messageReceive.roomNo)) {
                             int time = 8 - (int) ((new Date().getTime() - room.getStartDate().getTime()) / 1000);
                             roomCardIntoResponseBuilder.setReadyTimeCounter(time > 0 ? time : 0);
                         }
@@ -200,20 +164,62 @@ public class RunQuicklyClient {
                                 roomCardIntoResponseBuilder.setError(GameBase.ErrorCode.COUNT_FULL);
                                 response.setOperationType(GameBase.OperationType.ROOM_INFO).setData(roomCardIntoResponseBuilder.build().toByteString());
                                 messageReceive.send(response.build(), userId);
-                                redisService.unlock("lock_room" + roomNo);
+                                redisService.unlock("lock_room" + messageReceive.roomNo);
                                 break;
                             }
                         }
 
                         room.sendRoomInfo(roomCardIntoResponseBuilder, response, userId);
                         room.sendSeatInfo(response);
+
+                        //是否竞技场
+                        if (redisService.exists("room_match" + messageReceive.roomNo)) {
+                            String matchNo = redisService.getCache("room_match" + messageReceive.roomNo);
+                            if (redisService.exists("match_info" + matchNo)) {
+                                while (!redisService.lock("lock_match_info" + matchNo)) {
+                                }
+                                MatchInfo matchInfo = JSON.parseObject(redisService.getCache("match_info" + matchNo), MatchInfo.class);
+                                Arena arena = matchInfo.getArena();
+                                GameBase.MatchInfo matchInfoResponse = GameBase.MatchInfo.newBuilder().setArenaType(arena.getArenaType())
+                                        .setCount(arena.getCount()).setEntryFee(arena.getEntryFee()).setName(arena.getName())
+                                        .setReward(arena.getReward()).build();
+                                messageReceive.send(response.setOperationType(GameBase.OperationType.MATCH_INFO)
+                                        .setData(matchInfoResponse.toByteString()).build(), userId);
+
+                                int status = matchInfo.getStatus();
+                                int round = 1;
+                                if (status == 3) {
+                                    round = 2;
+                                }
+                                if (status == 4) {
+                                    round = 3;
+                                }
+                                if (status > 2) {
+                                    status = status == 5 ? 3 : 2;
+                                }
+                                GameBase.MatchData matchData = GameBase.MatchData.newBuilder()
+                                        .setCurrentCount(matchInfo.getMatchUsers().size())
+                                        .setStatus(status).setRound(round).build();
+                                messageReceive.send(response.setOperationType(GameBase.OperationType.MATCH_DATA)
+                                        .setData(matchData.toByteString()).build(), userId);
+
+                                if (!matchInfo.isStart()) {
+                                    List<Integer> roomNos = matchInfo.getRooms();
+                                    for (Integer roomNo : roomNos) {
+                                        new ReadyTimeout(roomNo, redisService, 0).start();
+                                    }
+                                    matchInfo.setStart(true);
+                                    new MatchScoreTimeout(Integer.valueOf(matchNo), redisService).start();
+                                }
+                                redisService.addCache("match_info" + matchNo, JSON.toJSONString(matchInfo));
+                                redisService.unlock("lock_match_info" + matchNo);
+                            }
+                        }
+
                         if (0 != room.getGameStatus().compareTo(GameStatus.WAITING)) {
                             RunQuickly.RunQuicklyGameInfo.Builder gameInfo = RunQuickly.RunQuicklyGameInfo.newBuilder();
                             for (int i = room.getHistoryList().size() - 1; i > room.getHistoryList().size() - room.getCount() - 1 && i > -1; i--) {
                                 OperationHistory operationHistory = room.getHistoryList().get(i);
-                                if (operationHistory.getUserId() == userId) {
-                                    break;
-                                }
                                 if (0 == OperationHistoryType.PLAY_CARD.compareTo(operationHistory.getHistoryType())) {
                                     gameInfo.setLastPlayCardUser(operationHistory.getUserId());
                                     break;
@@ -234,7 +240,7 @@ public class RunQuicklyClient {
                             if (null != operationSeat) {
                                 //检测是否该当前玩家出牌
                                 int time = 0;
-                                if (redisService.exists("room_match" + roomNo)) {
+                                if (redisService.exists("room_match" + messageReceive.roomNo)) {
                                     if (0 == room.getHistoryList().size()) {
                                         time = 8 - (int) ((new Date().getTime() - room.getStartDate().getTime() / 1000));
                                     } else {
@@ -246,12 +252,12 @@ public class RunQuicklyClient {
                                 messageReceive.send(response.build(), userId);
                             }
                         }
-                        redisService.addCache("room" + roomNo, JSON.toJSONString(room));
-                        redisService.unlock("lock_room" + roomNo);
+                        redisService.addCache("room" + messageReceive.roomNo, JSON.toJSONString(room));
+                        redisService.unlock("lock_room" + messageReceive.roomNo);
 
-                        if (redisService.exists("dissolve" + roomNo)) {
+                        if (redisService.exists("dissolve" + messageReceive.roomNo)) {
 
-                            String dissolveStatus = redisService.getCache("dissolve" + roomNo);
+                            String dissolveStatus = redisService.getCache("dissolve" + messageReceive.roomNo);
                             String[] users = dissolveStatus.split("-");
                             String user = "0";
                             for (String s : users) {
@@ -279,10 +285,10 @@ public class RunQuicklyClient {
                             response.setOperationType(GameBase.OperationType.DISSOLVE_REPLY).setData(replyResponse.build().toByteString());
                             messageReceive.send(response.build(), userId);
                         }
-                    } else if (redisService.exists("match_info" + roomNo)) {
-                        while (!redisService.lock("lock_match_info" + roomNo)) {
+                    } else if (redisService.exists("match_info" + messageReceive.roomNo)) {
+                        while (!redisService.lock("lock_match_info" + messageReceive.roomNo)) {
                         }
-                        MatchInfo matchInfo = JSON.parseObject(redisService.getCache("match_info" + roomNo), MatchInfo.class);
+                        MatchInfo matchInfo = JSON.parseObject(redisService.getCache("match_info" + messageReceive.roomNo), MatchInfo.class);
                         int score = 0;
                         for (MatchUser m : matchInfo.getMatchUsers()) {
                             if (m.getUserId() == userId) {
@@ -311,7 +317,7 @@ public class RunQuicklyClient {
                             roomSeatsInfo.addSeats(seatResponse.build());
                             messageReceive.send(response.setOperationType(GameBase.OperationType.SEAT_INFO).setData(roomSeatsInfo.build().toByteString()).build(), userId);
                         }
-                        redisService.unlock("lock_match_info" + roomNo);
+                        redisService.unlock("lock_match_info" + messageReceive.roomNo);
                     } else {
                         roomCardIntoResponseBuilder.setError(GameBase.ErrorCode.ROOM_NOT_EXIST);
                         response.setOperationType(GameBase.OperationType.ROOM_INFO).setData(roomCardIntoResponseBuilder.build().toByteString());
@@ -319,10 +325,10 @@ public class RunQuicklyClient {
                     }
                     break;
                 case READY:
-                    if (redisService.exists("room" + roomNo)) {
-                        while (!redisService.lock("lock_room" + roomNo)) {
+                    if (redisService.exists("room" + messageReceive.roomNo)) {
+                        while (!redisService.lock("lock_room" + messageReceive.roomNo)) {
                         }
-                        Room room = JSON.parseObject(redisService.getCache("room" + roomNo), Room.class);
+                        Room room = JSON.parseObject(redisService.getCache("room" + messageReceive.roomNo), Room.class);
                         if (0 != room.getGameStatus().compareTo(GameStatus.PLAYING)) {
                             room.getSeats().stream().filter(seat -> seat.getUserId() == userId && !seat.isReady()).forEach(seat -> {
                                 seat.setReady(true);
@@ -341,17 +347,17 @@ public class RunQuicklyClient {
                                 room.start(response, redisService);
                             }
                         }
-                        redisService.addCache("room" + roomNo, JSON.toJSONString(room));
-                        redisService.unlock("lock_room" + roomNo);
+                        redisService.addCache("room" + messageReceive.roomNo, JSON.toJSONString(room));
+                        redisService.unlock("lock_room" + messageReceive.roomNo);
                     } else {
                         logger.warn("房间不存在");
                     }
                     break;
                 case COMPLETED:
-                    if (redisService.exists("room" + roomNo)) {
-                        while (!redisService.lock("lock_room" + roomNo)) {
+                    if (redisService.exists("room" + messageReceive.roomNo)) {
+                        while (!redisService.lock("lock_room" + messageReceive.roomNo)) {
                         }
-                        Room room = JSON.parseObject(redisService.getCache("room" + roomNo), Room.class);
+                        Room room = JSON.parseObject(redisService.getCache("room" + messageReceive.roomNo), Room.class);
                         room.getSeats().stream().filter(seat -> seat.getUserId() == userId && !seat.isCompleted())
                                 .forEach(seat -> seat.setCompleted(true));
                         boolean allCompleted = true;
@@ -364,8 +370,8 @@ public class RunQuicklyClient {
                         if (allCompleted) {
                             //TODO 出牌超时
                         }
-                        redisService.addCache("room" + roomNo, JSON.toJSONString(room));
-                        redisService.unlock("lock_room" + roomNo);
+                        redisService.addCache("room" + messageReceive.roomNo, JSON.toJSONString(room));
+                        redisService.unlock("lock_room" + messageReceive.roomNo);
                     } else {
                         logger.warn("房间不存在");
                     }
@@ -375,10 +381,10 @@ public class RunQuicklyClient {
                     logger.info("runquickly 接收 " + actionRequest.getOperationId() + userId);
                     GameBase.BaseAction.Builder actionResponse = GameBase.BaseAction.newBuilder();
                     actionResponse.setID(userId);
-                    if (redisService.exists("room" + roomNo)) {
-                        while (!redisService.lock("lock_room" + roomNo)) {
+                    if (redisService.exists("room" + messageReceive.roomNo)) {
+                        while (!redisService.lock("lock_room" + messageReceive.roomNo)) {
                         }
-                        Room room = JSON.parseObject(redisService.getCache("room" + roomNo), Room.class);
+                        Room room = JSON.parseObject(redisService.getCache("room" + messageReceive.roomNo), Room.class);
                         switch (actionRequest.getOperationId()) {
                             case PLAY_CARD:
                                 RunQuickly.RunQuicklyPlayCard playCardRequest = RunQuickly.RunQuicklyPlayCard.parseFrom(actionRequest.getData());
@@ -390,19 +396,19 @@ public class RunQuicklyClient {
                                 break;
                         }
                         if (null != room.getRoomNo()) {
-                            redisService.addCache("room" + roomNo, JSON.toJSONString(room));
+                            redisService.addCache("room" + messageReceive.roomNo, JSON.toJSONString(room));
                         }
-                        redisService.unlock("lock_room" + roomNo);
+                        redisService.unlock("lock_room" + messageReceive.roomNo);
                     } else {
                         logger.warn("房间不存在");
                     }
                     break;
                 case REPLAY:
                     RunQuickly.RunQuicklyReplayResponse.Builder replayResponse = RunQuickly.RunQuicklyReplayResponse.newBuilder();
-                    if (redisService.exists("room" + roomNo)) {
-                        while (!redisService.lock("lock_room" + roomNo)) {
+                    if (redisService.exists("room" + messageReceive.roomNo)) {
+                        while (!redisService.lock("lock_room" + messageReceive.roomNo)) {
                         }
-                        Room room = JSON.parseObject(redisService.getCache("room" + roomNo), Room.class);
+                        Room room = JSON.parseObject(redisService.getCache("room" + messageReceive.roomNo), Room.class);
                         for (OperationHistory operationHistory : room.getHistoryList()) {
                             GameBase.OperationHistory.Builder builder = GameBase.OperationHistory.newBuilder();
                             builder.setID(operationHistory.getUserId());
@@ -412,20 +418,20 @@ public class RunQuicklyClient {
                         }
                         response.setOperationType(GameBase.OperationType.REPLAY).setData(replayResponse.build().toByteString());
                         messageReceive.send(response.build(), userId);
-                        redisService.unlock("lock_room" + roomNo);
+                        redisService.unlock("lock_room" + messageReceive.roomNo);
                     }
                     break;
                 case EXIT:
                     break;
                 case DISSOLVE:
-                    if (redisService.exists("room" + roomNo)) {
-                        while (!redisService.lock("lock_room" + roomNo)) {
+                    if (redisService.exists("room" + messageReceive.roomNo) && !redisService.exists("room_match" + messageReceive.roomNo)) {
+                        while (!redisService.lock("lock_room" + messageReceive.roomNo)) {
                         }
-                        if (!redisService.exists("dissolve" + roomNo) && !redisService.exists("delete_dissolve" + roomNo)) {
+                        if (!redisService.exists("dissolve" + messageReceive.roomNo) && !redisService.exists("delete_dissolve" + messageReceive.roomNo)) {
                             GameBase.DissolveApply dissolveApply = GameBase.DissolveApply.newBuilder()
                                     .setError(GameBase.ErrorCode.SUCCESS).setUserId(userId).build();
-                            Room room = JSON.parseObject(redisService.getCache("room" + roomNo), Room.class);
-                            redisService.addCache("dissolve" + roomNo, "-1" + userId);
+                            Room room = JSON.parseObject(redisService.getCache("room" + messageReceive.roomNo), Room.class);
+                            redisService.addCache("dissolve" + messageReceive.roomNo, "-1" + userId);
                             response.setOperationType(GameBase.OperationType.DISSOLVE).setData(dissolveApply.toByteString());
                             for (Seat seat : room.getSeats()) {
                                 if (RunQuicklyTcpService.userClients.containsKey(seat.getUserId())) {
@@ -452,32 +458,32 @@ public class RunQuicklyClient {
                                 }
                                 room.roomOver(response, redisService);
                             } else {
-                                new DissolveTimeout(Integer.valueOf(roomNo), redisService).start();
+                                new DissolveTimeout(Integer.valueOf(messageReceive.roomNo), redisService).start();
                             }
                         } else {
                             response.setOperationType(GameBase.OperationType.DISSOLVE).setData(GameBase.DissolveApply.newBuilder()
                                     .setError(GameBase.ErrorCode.AREADY_DISSOLVE).build().toByteString());
                             messageReceive.send(response.build(), userId);
                         }
-                        redisService.unlock("lock_room" + roomNo);
+                        redisService.unlock("lock_room" + messageReceive.roomNo);
                     }
                     break;
                 case DISSOLVE_REPLY:
                     GameBase.DissolveReplyRequest dissolveReply = GameBase.DissolveReplyRequest.parseFrom(request.getData());
-                    if (redisService.exists("room" + roomNo)) {
-                        while (!redisService.lock("lock_room" + roomNo)) {
+                    if (redisService.exists("room" + messageReceive.roomNo)) {
+                        while (!redisService.lock("lock_room" + messageReceive.roomNo)) {
                         }
-                        while (!redisService.lock("lock_dissolve" + roomNo)) {
+                        while (!redisService.lock("lock_dissolve" + messageReceive.roomNo)) {
                         }
-                        if (redisService.exists("dissolve" + roomNo)) {
-                            Room room = JSON.parseObject(redisService.getCache("room" + roomNo), Room.class);
-                            String dissolveStatus = redisService.getCache("dissolve" + roomNo);
+                        if (redisService.exists("dissolve" + messageReceive.roomNo)) {
+                            Room room = JSON.parseObject(redisService.getCache("room" + messageReceive.roomNo), Room.class);
+                            String dissolveStatus = redisService.getCache("dissolve" + messageReceive.roomNo);
                             if (dissolveReply.getAgree()) {
                                 dissolveStatus = dissolveStatus + "-1" + userId;
                             } else {
                                 dissolveStatus = dissolveStatus + "-2" + userId;
                             }
-                            redisService.addCache("dissolve" + roomNo, dissolveStatus);
+                            redisService.addCache("dissolve" + messageReceive.roomNo, dissolveStatus);
                             int disagree = 0;
                             int agree = 0;
                             GameBase.DissolveReplyResponse.Builder replyResponse = GameBase.DissolveReplyResponse.newBuilder();
@@ -505,8 +511,8 @@ public class RunQuicklyClient {
                                         messageReceive.send(response.build(), seat.getUserId());
                                     }
                                 }
-                                redisService.delete("dissolve" + roomNo);
-                                redisService.addCache("delete_dissolve" + roomNo, "", 60);
+                                redisService.delete("dissolve" + messageReceive.roomNo);
+                                redisService.addCache("delete_dissolve" + messageReceive.roomNo, "", 60);
                             } else if (agree > room.getSeats().size() / 2) {
                                 GameBase.DissolveConfirm dissolveConfirm = GameBase.DissolveConfirm.newBuilder().setDissolved(true).build();
                                 response.setOperationType(GameBase.OperationType.DISSOLVE_CONFIRM).setData(dissolveConfirm.toByteString());
@@ -516,18 +522,18 @@ public class RunQuicklyClient {
                                     }
                                 }
                                 room.roomOver(response, redisService);
-                                redisService.delete("dissolve" + roomNo);
+                                redisService.delete("dissolve" + messageReceive.roomNo);
                             }
                         }
-                        redisService.unlock("lock_dissolve" + roomNo);
-                        redisService.unlock("lock_room" + roomNo);
+                        redisService.unlock("lock_dissolve" + messageReceive.roomNo);
+                        redisService.unlock("lock_room" + messageReceive.roomNo);
                     }
                     break;
                 case MESSAGE:
-                    if (redisService.exists("room" + roomNo)) {
-                        while (!redisService.lock("lock_room" + roomNo)) {
+                    if (redisService.exists("room" + messageReceive.roomNo)) {
+                        while (!redisService.lock("lock_room" + messageReceive.roomNo)) {
                         }
-                        Room room = JSON.parseObject(redisService.getCache("room" + roomNo), Room.class);
+                        Room room = JSON.parseObject(redisService.getCache("room" + messageReceive.roomNo), Room.class);
                         GameBase.Message message = GameBase.Message.parseFrom(request.getData());
 
                         GameBase.Message messageResponse = GameBase.Message.newBuilder().setUserId(userId)
@@ -539,14 +545,14 @@ public class RunQuicklyClient {
                                         .setData(messageResponse.toByteString()).build(), seat.getUserId());
                             }
                         }
-                        redisService.unlock("lock_room" + roomNo);
+                        redisService.unlock("lock_room" + messageReceive.roomNo);
                     }
                     break;
                 case INTERACTION:
-                    if (redisService.exists("room" + roomNo)) {
-                        while (!redisService.lock("lock_room" + roomNo)) {
+                    if (redisService.exists("room" + messageReceive.roomNo)) {
+                        while (!redisService.lock("lock_room" + messageReceive.roomNo)) {
                         }
-                        Room room = JSON.parseObject(redisService.getCache("room" + roomNo), Room.class);
+                        Room room = JSON.parseObject(redisService.getCache("room" + messageReceive.roomNo), Room.class);
                         GameBase.AppointInteraction appointInteraction = GameBase.AppointInteraction.parseFrom(request.getData());
 
                         GameBase.AppointInteraction appointInteractionResponse = GameBase.AppointInteraction.newBuilder().setUserId(userId)
@@ -557,7 +563,7 @@ public class RunQuicklyClient {
                                         .setData(appointInteractionResponse.toByteString()).build(), seat.getUserId());
                             }
                         }
-                        redisService.unlock("lock_room" + roomNo);
+                        redisService.unlock("lock_room" + messageReceive.roomNo);
                     }
                     break;
                 case LOGGER:

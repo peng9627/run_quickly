@@ -84,25 +84,36 @@ public class MatchInfo {
         Room room = new Room();
         room.setBaseScore(1);
         room.setRoomNo(roomNo(redisService));
-        //TODO 测试，要改回去
-        room.setGameTimes(1);
+        room.setGameTimes(gameTimes);
         room.setCount(4);
         room.setGameRules(1);
         room.setMultiple(1);
         room.setGameStatus(GameStatus.WAITING);
         room.setSeatNos(new ArrayList<>(Arrays.asList(1, 2, 3, 4)));
+        GameBase.MatchResult.Builder matchResult = GameBase.MatchResult.newBuilder();
         while (4 > room.getSeats().size()) {
             User user = users.remove(0);
             room.addSeat(user, userIdScore.get(user.getUserId()));
-            response.setOperationType(GameBase.OperationType.MATCH_DATA).setData(matchData.build().toByteString());
+            matchResult.setResult(1).setTotalScore(userIdScore.get(user.getUserId())).setCurrentScore(-1);
+            response.setOperationType(GameBase.OperationType.MATCH_RESULT).setData(matchResult.build().toByteString());
             if (RunQuicklyTcpService.userClients.containsKey(user.getUserId())) {
                 RunQuicklyTcpService.userClients.get(user.getUserId()).send(response.build(), user.getUserId());
+                room.sendRoomInfo(GameBase.RoomCardIntoResponse.newBuilder(), response, user.getUserId());
             }
             room.sendRoomInfo(GameBase.RoomCardIntoResponse.newBuilder(), response, user.getUserId());
             redisService.addCache("room_match" + room.getRoomNo(), matchNo);
             redisService.addCache("reconnect" + user.getUserId(), "run_quickly," + room.getRoomNo());
         }
         room.sendSeatInfo(response);
+
+        for (Seat seat : room.getSeats()) {
+            if (RunQuicklyTcpService.userClients.containsKey(seat.getUserId())) {
+                RunQuicklyTcpService.userClients.get(seat.getUserId()).roomNo = room.getRoomNo();
+                response.setOperationType(GameBase.OperationType.MATCH_DATA).setData(matchData.build().toByteString());
+                RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.build(), seat.getUserId());
+            }
+        }
+
         new ReadyTimeout(Integer.parseInt(room.getRoomNo()), redisService, 0).start();
         redisService.addCache("room" + room.getRoomNo(), JSON.toJSONString(room));
         return Integer.parseInt(room.getRoomNo());
