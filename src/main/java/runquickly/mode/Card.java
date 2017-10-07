@@ -46,7 +46,7 @@ public class Card {
         cards.sort(new Comparator<Integer>() {
             @Override
             public int compare(Integer o1, Integer o2) {
-                return o1.compareTo(o2);
+                return (o1 % 100 > o2 % 100) ? 1 : -1;
             }
         });
         switch (cards.size()) {
@@ -177,8 +177,16 @@ public class Card {
     public static int getCardValue(List<Integer> cardList, CardType cardType) {
         List<Integer> cards = new ArrayList<>();
         for (int integer : cardList) {
-            if (2 == integer % 100) {
+            if (1 != Card.containSize(cardList, 3) &&
+                    1 != Card.containSize(cardList, 103) &&
+                    1 != Card.containSize(cardList, 203) &&
+                    1 != Card.containSize(cardList, 303) && 2 == integer % 100) {
                 cards.add(15);
+            } else if ((1 == Card.containSize(cardList, 3) ||
+                    1 == Card.containSize(cardList, 103) ||
+                    1 == Card.containSize(cardList, 203) ||
+                    1 == Card.containSize(cardList, 303) )&& 14 == integer % 100) {
+                cards.add(1);
             } else {
                 cards.add(integer % 100);
             }
@@ -186,7 +194,7 @@ public class Card {
         cards.sort(new Comparator<Integer>() {
             @Override
             public int compare(Integer o1, Integer o2) {
-                return o1.compareTo(o2);
+                return (o1 % 100 > o2 % 100) ? 1 : -1;
             }
         });
         switch (cardType) {

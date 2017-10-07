@@ -1,11 +1,11 @@
 package runquickly.redis;
 
+import runquickly.utils.CoreDateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPool;
-import runquickly.utils.CoreDateUtils;
 
 import java.util.*;
 
@@ -213,7 +213,6 @@ public class RedisClientTemplate {
     }
 
     public Long del(String key) {
-        log.info("redis 删除" + key);
         Long result = null;
         ShardedJedis shardedJedis = shardedJedisPool.getResource();
         if (shardedJedis == null) {
@@ -226,7 +225,6 @@ public class RedisClientTemplate {
         } finally {
             shardedJedis.close();
         }
-        log.info("redis 删除" + key + "成功");
         return result;
     }
 
@@ -267,7 +265,6 @@ public class RedisClientTemplate {
             while ((System.nanoTime() - nano) < timeoutNanos) {
                 if (shardedJedis.setnx(lockedKey, CoreDateUtils.formatDate(new Date(), "yyyyMMddHHmmssSSS")) == 1) {
                     shardedJedis.expire(lockedKey, 5);
-                    log.info("RedisSimpleLockUtils.lock-->lockedKey=‘{}’ , timeout={}毫秒", lockedKey, timeout);
                     return true;
                 }
                 // 短暂休眠，nano避免出现活锁
@@ -331,7 +328,5 @@ public class RedisClientTemplate {
         } finally {
             shardedJedis.close();
         }
-
-        log.info("RedisSimpleLockUtils.unlock-->lockedKey=‘{}’ ,del lock={}", lockedKey, del);
     }
 }

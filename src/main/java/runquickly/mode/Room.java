@@ -262,16 +262,28 @@ public class Room {
                                 tempCards.sort(new Comparator<Integer>() {
                                     @Override
                                     public int compare(Integer o1, Integer o2) {
-                                        if (o1 == 2) {
+                                        if (o1 % 100 == 2) {
                                             o1 = 15;
                                         }
-                                        if (o2 == 2) {
+                                        if (o2 % 100 == 2) {
                                             o2 = 15;
                                         }
-                                        return o1.intValue() > o2 ? 1 : -1;
+                                        return o1 % 100 > o2 % 100 ? 1 : -1;
                                     }
                                 });
-                                if (tempCards.get(tempCards.size() - 1) % 100 > playedCard % 100 && tempCards.get(tempCards.size() - 1) % 100 > lastCard) {
+                                int value = tempCards.get(tempCards.size() - 1) % 100;
+                                if (2 == value) {
+                                    value = 15;
+                                }
+                                int playedCardValue = playedCard % 100;
+                                if (2 == playedCardValue) {
+                                    playedCardValue = 15;
+                                }
+                                int lastCardValue = lastCard % 100;
+                                if (2 == lastCardValue) {
+                                    lastCardValue = 15;
+                                }
+                                if (value > playedCardValue && value > lastCardValue % 100) {
                                     onlyLose = true;
                                 }
                                 break;
@@ -701,6 +713,18 @@ public class Room {
                             }
                         });
                         for (int i = 0; i < matchUsers.size(); i++) {
+                            if (i == 0 && matchInfo.getArena().getArenaType() == 0) {
+                                jsonObject.clear();
+                                jsonObject.put("flowType", 1);
+                                jsonObject.put("money", matchInfo.getArena().getReward());
+                                jsonObject.put("description", "比赛获胜" + matchInfo.getArena().getId());
+                                jsonObject.put("userId", matchUsers.get(i).getUserId());
+                                ApiResponse moneyDetail = JSON.parseObject(HttpUtil.urlConnectionByRsa(Constant.apiUrl + Constant.moneyDetailedCreate, jsonObject.toJSONString()), new TypeReference<ApiResponse<User>>() {
+                                });
+                                if (0 != moneyDetail.getCode()) {
+                                    LoggerFactory.getLogger(this.getClass()).error(Constant.apiUrl + Constant.moneyDetailedCreate + "?" + jsonObject.toJSONString());
+                                }
+                            }
                             matchResult.setResult(i == 0 ? 1 : 3).setTotalScore(matchUsers.get(i).getScore()).setCurrentScore(-1);
                             response.setOperationType(GameBase.OperationType.MATCH_RESULT).setData(matchResult.build().toByteString());
                             if (RunQuicklyTcpService.userClients.containsKey(matchUsers.get(i).getUserId())) {
