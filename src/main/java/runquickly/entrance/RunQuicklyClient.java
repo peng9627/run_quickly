@@ -48,12 +48,18 @@ public class RunQuicklyClient {
                         Room room = JSON.parseObject(redisService.getCache("room" + messageReceive.roomNo), Room.class);
                         if (null != room) {
                             for (Seat seat : room.getSeats()) {
-                                if (seat.getUserId() == userId) {
+                                if (seat.getUserId() == userId && !seat.isRobot()) {
                                     seat.setRobot(true);
+                                    response.setOperationType(GameBase.OperationType.ONLINE).setData(GameBase.Online.newBuilder()
+                                            .setOnline(false).setUserId(userId).build().toByteString());
+                                    for (Seat seat1 : room.getSeats()) {
+                                        if (RunQuicklyTcpService.userClients.containsKey(seat1.getUserId())) {
+                                            messageReceive.send(response.build(), seat1.getUserId());
+                                        }
+                                    }
                                     break;
                                 }
                             }
-                            room.sendSeatInfo(response);
 
                             redisService.addCache("room" + messageReceive.roomNo, JSON.toJSONString(room));
                         }
@@ -313,7 +319,8 @@ public class RunQuicklyClient {
                             seatResponse.setNickname(userResponse.getData().getNickname());
                             seatResponse.setHead(userResponse.getData().getHead());
                             seatResponse.setSex(userResponse.getData().getSex().equals("MAN"));
-                            seatResponse.setOffline(false);seatResponse.setIsRobot(false);
+                            seatResponse.setOffline(false);
+                            seatResponse.setIsRobot(false);
                             roomSeatsInfo.addSeats(seatResponse.build());
                             messageReceive.send(response.setOperationType(GameBase.OperationType.SEAT_INFO).setData(roomSeatsInfo.build().toByteString()).build(), userId);
                         }
@@ -561,6 +568,32 @@ public class RunQuicklyClient {
                             if (RunQuicklyTcpService.userClients.containsKey(seat.getUserId())) {
                                 messageReceive.send(response.setOperationType(GameBase.OperationType.MESSAGE)
                                         .setData(appointInteractionResponse.toByteString()).build(), seat.getUserId());
+                            }
+                        }
+                        redisService.unlock("lock_room" + messageReceive.roomNo);
+                    }
+                    break;
+                case ONLINE:
+                    if (redisService.exists("room" + messageReceive.roomNo)) {
+                        while (!redisService.lock("lock_room" + messageReceive.roomNo)) {
+                        }
+                        Room room = JSON.parseObject(redisService.getCache("room" + messageReceive.roomNo), Room.class);
+                        GameBase.Online online = GameBase.Online.parseFrom(request.getData());
+                        for (Seat seat : room.getSeats()) {
+                            if (seat.getUserId() == userId) {
+                                if (online.getOnline() && seat.isRobot()) {
+                                    seat.setRobot(false);
+                                } else if (!online.getOnline() && !seat.isRobot()) {
+                                    seat.setRobot(true);
+                                } else {
+                                    break;
+                                }
+                                response.setOperationType(GameBase.OperationType.ONLINE).setData(online.toBuilder().setUserId(userId).build().toByteString());
+                                for (Seat seat1 : room.getSeats()) {
+                                    if (RunQuicklyTcpService.userClients.containsKey(seat1.getUserId())) {
+                                        messageReceive.send(response.build(), seat1.getUserId());
+                                    }
+                                }
                             }
                         }
                         redisService.unlock("lock_room" + messageReceive.roomNo);
