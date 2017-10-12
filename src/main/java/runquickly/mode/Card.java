@@ -185,7 +185,7 @@ public class Card {
             } else if ((1 == Card.containSize(cardList, 3) ||
                     1 == Card.containSize(cardList, 103) ||
                     1 == Card.containSize(cardList, 203) ||
-                    1 == Card.containSize(cardList, 303) )&& 14 == integer % 100) {
+                    1 == Card.containSize(cardList, 303)) && 14 == integer % 100) {
                 cards.add(1);
             } else {
                 cards.add(integer % 100);
@@ -221,7 +221,13 @@ public class Card {
                 }
                 return cards.get(0);
             case SANZHANG:
-                return cards.get(2);
+                int val = cards.get(2);
+                if (val == 1) {
+                    val = 14;
+                } else if (val == 2) {
+                    val = 15;
+                }
+                return val;
             case FEIJI:
                 if (3 == Card.containSize(cardList, 3) && 3 == Card.containSize(cardList, 15)) {
                     if (3 == Card.containSize(cardList, 14)) {
@@ -236,7 +242,13 @@ public class Card {
                     }
                 }
             case SIDAIER:
-                return cards.get(3);
+                val = cards.get(3);
+                if (val == 1) {
+                    val = 14;
+                } else if (val == 2) {
+                    val = 15;
+                }
+                return val;
         }
         return 0;
     }
