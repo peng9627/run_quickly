@@ -10,6 +10,7 @@ public class SeatRecord {
     private List<Integer> initialCards = new ArrayList<>();         //初始牌
     private List<Integer> cards = new ArrayList<>();                //牌
     private int winOrLose;                      //输赢分数
+    private int multiple;
 
     public int getUserId() {
         return userId;
@@ -57,5 +58,13 @@ public class SeatRecord {
 
     public void setWinOrLose(int winOrLose) {
         this.winOrLose = winOrLose;
+    }
+
+    public int getMultiple() {
+        return multiple;
+    }
+
+    public void setMultiple(int multiple) {
+        this.multiple = multiple;
     }
 }

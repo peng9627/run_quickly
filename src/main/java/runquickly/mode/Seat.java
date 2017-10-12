@@ -24,6 +24,7 @@ public class Seat {
     private int winCount;                       //赢的次数
     private String ip;                          //ip
     private int gamecount;                      //游戏局数
+    private int multiple;
 
     public int getSeatNo() {
         return seatNo;
@@ -153,11 +154,20 @@ public class Seat {
         this.gamecount = gamecount;
     }
 
+    public int getMultiple() {
+        return multiple;
+    }
+
+    public void setMultiple(int multiple) {
+        this.multiple = multiple;
+    }
+
     public void clear() {
         initialCards.clear();
         cards.clear();
         ready = false;
         completed = false;
         canPlay = true;
+        multiple = 1;
     }
 }

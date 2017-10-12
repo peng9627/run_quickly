@@ -34,7 +34,6 @@ public class Room {
 
     private int gameTimes; //游戏局数
     private int count;//人数
-    private int multiple;
     private int gameCount;
     private List<Record> recordList = new ArrayList<>();//战绩
     private int gameRules;
@@ -126,14 +125,6 @@ public class Room {
 
     public void setCount(int count) {
         this.count = count;
-    }
-
-    public int getMultiple() {
-        return multiple;
-    }
-
-    public void setMultiple(int multiple) {
-        this.multiple = multiple;
     }
 
     public int getGameCount() {
@@ -229,10 +220,19 @@ public class Room {
     public void gameOver(GameBase.BaseConnection.Builder response, RedisService redisService) {
 
         Record record = new Record();
-        record.setMultiple(multiple);
         List<SeatRecord> seatRecords = new ArrayList<>();
         record.getHistoryList().addAll(historyList);
 
+        int multiple = 1;
+        for (Seat seat : seats) {
+            if (seat.getCards().size() == 0) {
+                multiple = seat.getMultiple();
+                break;
+            }
+        }
+        if (0 == multiple) {
+            multiple = 1;
+        }
 
         RunQuickly.RunQuicklyResultResponse.Builder resultResponse = RunQuickly.RunQuicklyResultResponse.newBuilder();
         resultResponse.setReadyTimeCounter(redisService.exists("room_match" + roomNo) ? 8 : 0);
@@ -323,6 +323,7 @@ public class Room {
                     seatRecord.getInitialCards().addAll(seat.getInitialCards());
                     seatRecord.getCards().addAll(seat.getCards());
                     seatRecord.setWinOrLose(-score);
+                    seatRecord.setMultiple(seat.getMultiple());
                     seatRecords.add(seatRecord);
 
                 } else {
@@ -356,6 +357,7 @@ public class Room {
                         seatRecord.getInitialCards().addAll(seat.getInitialCards());
                         seatRecord.getCards().addAll(seat.getCards());
                         seatRecord.setWinOrLose(0);
+                        seatRecord.setMultiple(seat.getMultiple());
                         seatRecords.add(seatRecord);
 
                     }
@@ -377,6 +379,7 @@ public class Room {
                     seatRecord.getInitialCards().addAll(seat.getInitialCards());
                     seatRecord.getCards().addAll(seat.getCards());
                     seatRecord.setWinOrLose(-winScore);
+                    seatRecord.setMultiple(seat.getMultiple());
                     seatRecords.add(seatRecord);
                     break;
                 }
@@ -399,6 +402,7 @@ public class Room {
         seatRecord.getInitialCards().addAll(winSeat.getInitialCards());
         seatRecord.getCards().addAll(winSeat.getCards());
         seatRecord.setWinOrLose(winScore);
+        seatRecord.setMultiple(winSeat.getMultiple());
         seatRecords.add(seatRecord);
 
         record.getSeatRecordList().addAll(seatRecords);
@@ -854,7 +858,6 @@ public class Room {
         gameStatus = GameStatus.READYING;
         operationSeat = 0;
         lastOperation = 0;
-        multiple = 1;
         seats.forEach(Seat::clear);
         startDate = new Date();
     }
@@ -998,7 +1001,7 @@ public class Room {
                                 return;
                             }
                             if (myCardType == CardType.ZHADAN) {
-                                multiple *= 2;
+                                seat.setMultiple(seat.getMultiple() * 2);
                             }
                         }
                     } else {
@@ -1033,7 +1036,7 @@ public class Room {
                                 return;
                             }
                             if (myCardType == CardType.ZHADAN) {
-                                multiple *= 2;
+                                seat.setMultiple(seat.getMultiple() * 2);
                             }
                         } else {
                             if (1 == gameRules % 2) {
