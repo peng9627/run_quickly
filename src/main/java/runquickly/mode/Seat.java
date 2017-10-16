@@ -168,6 +168,5 @@ public class Seat {
         ready = false;
         completed = false;
         canPlay = true;
-        multiple = 1;
     }
 }

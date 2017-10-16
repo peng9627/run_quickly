@@ -166,7 +166,7 @@ public class Room {
         seat.setAreaString(user.getArea());
         seat.setHead(user.getHead());
         seat.setNickname(user.getNickname());
-        seat.setSex(user.getSex().equals("MAN"));
+        seat.setSex(user.getSex().equals("1"));
         seat.setScore(score);
         seat.setSeatNo(seatNos.get(0));
         seat.setIp(user.getLastLoginIp());
@@ -783,11 +783,20 @@ public class Room {
                     LoggerFactory.getLogger(this.getClass()).error(Constant.apiUrl + Constant.moneyDetailedCreate + "?" + jsonObject.toJSONString());
                 }
             }
-            RunQuickly.RunQuicklyBalanceResponse.Builder balance = RunQuickly.RunQuicklyBalanceResponse.newBuilder();
-            for (Seat seat : seats) {
-                RunQuickly.RunQuicklySeatBalance.Builder seatBalance = RunQuickly.RunQuicklySeatBalance.newBuilder()
-                        .setID(seat.getUserId()).setWinOrLose(seat.getScore()).setWinCount(seat.getWinCount());
-                balance.addGameBalance(seatBalance);
+
+            if (0 != recordList.size()) {
+                RunQuickly.RunQuicklyBalanceResponse.Builder balance = RunQuickly.RunQuicklyBalanceResponse.newBuilder();
+                for (Seat seat : seats) {
+                    RunQuickly.RunQuicklySeatBalance.Builder seatBalance = RunQuickly.RunQuicklySeatBalance.newBuilder()
+                            .setID(seat.getUserId()).setWinOrLose(seat.getScore()).setWinCount(seat.getWinCount());
+                    balance.addGameBalance(seatBalance);
+                }
+                for (Seat seat : seats) {
+                    if (RunQuicklyTcpService.userClients.containsKey(seat.getUserId())) {
+                        response.setOperationType(GameBase.OperationType.BALANCE).setData(balance.build().toByteString());
+                        RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.build(), seat.getUserId());
+                    }
+                }
             }
 
             StringBuilder people = new StringBuilder();
@@ -804,8 +813,6 @@ public class Room {
                     redisService.addCache("backkey" + uuid, seat.getUserId() + "", 1800);
                     over.setBackKey(uuid);
                     over.setDateTime(new Date().getTime());
-                    response.setOperationType(GameBase.OperationType.BALANCE).setData(balance.build().toByteString());
-                    RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.build(), seat.getUserId());
                     response.setOperationType(GameBase.OperationType.OVER).setData(over.build().toByteString());
                     RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.build(), seat.getUserId());
                 }
@@ -903,6 +910,9 @@ public class Room {
         gameCount += 1;
         gameStatus = GameStatus.PLAYING;
         dealCard();
+        for (Seat seat : seats) {
+            seat.setMultiple(1);
+        }
         RunQuickly.RunQuicklyStartResponse.Builder dealCard = RunQuickly.RunQuicklyStartResponse.newBuilder();
         response.setOperationType(GameBase.OperationType.START);
         seats.stream().filter(seat -> RunQuicklyTcpService.userClients.containsKey(seat.getUserId())).forEach(seat -> {

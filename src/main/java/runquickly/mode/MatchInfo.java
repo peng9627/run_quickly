@@ -87,7 +87,6 @@ public class MatchInfo {
         room.setGameTimes(gameTimes);
         room.setCount(4);
         room.setGameRules(1);
-        room.setMultiple(1);
         room.setGameStatus(GameStatus.WAITING);
         room.setSeatNos(new ArrayList<>(Arrays.asList(1, 2, 3, 4)));
         GameBase.MatchResult.Builder matchResult = GameBase.MatchResult.newBuilder();
