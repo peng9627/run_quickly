@@ -132,7 +132,7 @@ public class RunQuicklyClient {
                         try {
                             wait(10);
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            logger.error(e.toString(), e);
                         }
                     }
                     RunQuicklyTcpService.userClients.put(userId, messageReceive);
@@ -639,7 +639,7 @@ public class RunQuicklyClient {
                     break;
             }
         } catch (InvalidProtocolBufferException e) {
-            e.printStackTrace();
+            logger.error(e.toString(), e);
         }
     }
 }

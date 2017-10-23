@@ -51,7 +51,7 @@ public class RunQuicklyTcpService implements Runnable {
             logger.info("跑得快tcp开启成功，端口[" + port + "]");
         } catch (IOException e) {
             logger.error("socket.open.fail.message");
-            e.printStackTrace();
+            logger.error(e.toString(), e);
         }
 
         try {
@@ -61,12 +61,12 @@ public class RunQuicklyTcpService implements Runnable {
             }
         } catch (IOException e) {
             logger.error("socket.server.dirty.shutdown.message");
-            e.printStackTrace();
+            logger.error(e.toString(), e);
         } finally {
             try {
                 serverSocket.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error(e.toString(), e);
             }
         }
     }
