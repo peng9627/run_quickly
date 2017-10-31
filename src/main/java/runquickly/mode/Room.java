@@ -177,7 +177,7 @@ public class Room {
         seat.setCanPlay(true);
     }
 
-    public void dealCard() {
+    public void dealCard(GameBase.BaseConnection.Builder response, RedisService redisService) {
         startDate = new Date();
         int min = 14;
         if (operationSeat == 0) {
@@ -196,6 +196,16 @@ public class Room {
                 }
                 seat.setCards(cardList);
                 seat.setInitialCards(cardList);
+            }
+        }
+
+        for (Seat seat : seats) {
+            if (1 == Card.containSize(seat.getCards(), 2)
+                    && 1 == Card.containSize(seat.getCards(), 102)
+                    && 1 == Card.containSize(seat.getCards(), 202)
+                    && 1 == Card.containSize(seat.getCards(), 302)) {
+                gameOver(response, redisService);
+                break;
             }
         }
     }
@@ -225,7 +235,11 @@ public class Room {
 
         int multiple = 1;
         for (Seat seat : seats) {
-            if (seat.getCards().size() == 0) {
+            if (seat.getCards().size() == 0 || (1 == Card.containSize(seat.getCards(), 2)
+                    && 1 == Card.containSize(seat.getCards(), 102)
+                    && 1 == Card.containSize(seat.getCards(), 202)
+                    && 1 == Card.containSize(seat.getCards(), 302)
+                    && 1 == (gameRules >> 2) % 2)) {
                 multiple = seat.getMultiple();
                 break;
             }
@@ -241,63 +255,69 @@ public class Room {
 
         int lastUser = 0;
         boolean onlyLose = false;
-        OperationHistory operationHistory = historyList.get(historyList.size() - 1);
-        if (operationHistory.getCards().size() == 1 && historyList.size() > 1) {
-            OperationHistory operationHistory1 = historyList.get(historyList.size() - 2);
-            int playedCard = 0;
-            if (0 != operationHistory1.getHistoryType().compareTo(OperationHistoryType.PASS)) {
-                playedCard = operationHistory1.getCards().get(0);
-            }
-            lastUser = operationHistory1.getUserId();
-            int lastCard;
-            for (int i = historyList.size() - 3; i > historyList.size() - count - 2 && i > -1; i--) {
-                OperationHistory operationHistory2 = historyList.get(i);
-                if (0 == OperationHistoryType.PLAY_CARD.compareTo(operationHistory2.getHistoryType())) {
-                    if (1 == operationHistory2.getCards().size()) {
-                        lastCard = operationHistory2.getCards().get(0);
-                        for (Seat seat : seats) {
-                            if (seat.getUserId() == lastUser) {
-                                List<Integer> tempCards = new ArrayList<>();
-                                tempCards.addAll(seat.getCards());
-                                tempCards.sort(new Comparator<Integer>() {
-                                    @Override
-                                    public int compare(Integer o1, Integer o2) {
-                                        if (o1 % 100 == 2) {
-                                            o1 = 15;
+        if (historyList.size() > 3) {
+            OperationHistory operationHistory = historyList.get(historyList.size() - 1);
+            if (operationHistory.getCards().size() == 1 && historyList.size() > 1) {
+                OperationHistory operationHistory1 = historyList.get(historyList.size() - 2);
+                int playedCard = 0;
+                if (0 != operationHistory1.getHistoryType().compareTo(OperationHistoryType.PASS)) {
+                    playedCard = operationHistory1.getCards().get(0);
+                }
+                lastUser = operationHistory1.getUserId();
+                int lastCard;
+                for (int i = historyList.size() - 3; i > historyList.size() - count - 2 && i > -1; i--) {
+                    OperationHistory operationHistory2 = historyList.get(i);
+                    if (0 == OperationHistoryType.PLAY_CARD.compareTo(operationHistory2.getHistoryType())) {
+                        if (1 == operationHistory2.getCards().size()) {
+                            lastCard = operationHistory2.getCards().get(0);
+                            for (Seat seat : seats) {
+                                if (seat.getUserId() == lastUser) {
+                                    List<Integer> tempCards = new ArrayList<>();
+                                    tempCards.addAll(seat.getCards());
+                                    tempCards.sort(new Comparator<Integer>() {
+                                        @Override
+                                        public int compare(Integer o1, Integer o2) {
+                                            if (o1 % 100 == 2) {
+                                                o1 = 15;
+                                            }
+                                            if (o2 % 100 == 2) {
+                                                o2 = 15;
+                                            }
+                                            return o1 % 100 > o2 % 100 ? 1 : -1;
                                         }
-                                        if (o2 % 100 == 2) {
-                                            o2 = 15;
-                                        }
-                                        return o1 % 100 > o2 % 100 ? 1 : -1;
+                                    });
+                                    int value = tempCards.get(tempCards.size() - 1) % 100;
+                                    if (2 == value) {
+                                        value = 15;
                                     }
-                                });
-                                int value = tempCards.get(tempCards.size() - 1) % 100;
-                                if (2 == value) {
-                                    value = 15;
+                                    int playedCardValue = playedCard % 100;
+                                    if (2 == playedCardValue) {
+                                        playedCardValue = 15;
+                                    }
+                                    int lastCardValue = lastCard % 100;
+                                    if (2 == lastCardValue) {
+                                        lastCardValue = 15;
+                                    }
+                                    if (value > playedCardValue && value > lastCardValue % 100) {
+                                        onlyLose = true;
+                                    }
+                                    break;
                                 }
-                                int playedCardValue = playedCard % 100;
-                                if (2 == playedCardValue) {
-                                    playedCardValue = 15;
-                                }
-                                int lastCardValue = lastCard % 100;
-                                if (2 == lastCardValue) {
-                                    lastCardValue = 15;
-                                }
-                                if (value > playedCardValue && value > lastCardValue % 100) {
-                                    onlyLose = true;
-                                }
-                                break;
                             }
                         }
+                        break;
                     }
-                    break;
                 }
             }
         }
 
         if (!onlyLose) {
             for (Seat seat : seats) {
-                if (seat.getCards().size() > 0) {
+                if (seat.getCards().size() > 0 && !(1 == Card.containSize(seat.getCards(), 2)
+                        && 1 == Card.containSize(seat.getCards(), 102)
+                        && 1 == Card.containSize(seat.getCards(), 202)
+                        && 1 == Card.containSize(seat.getCards(), 302)
+                        && 1 == (gameRules >> 2) % 2)) {
                     int score = 0;
                     int cardSize = seat.getCards().size();
                     if (cardSize == 13) {
@@ -909,7 +929,7 @@ public class Room {
     public void start(GameBase.BaseConnection.Builder response, RedisService redisService) {
         gameCount += 1;
         gameStatus = GameStatus.PLAYING;
-        dealCard();
+        dealCard(response, redisService);
         for (Seat seat : seats) {
             seat.setMultiple(1);
         }
@@ -970,7 +990,7 @@ public class Room {
                                 break;
                             }
                             if (0 == OperationHistoryType.PLAY_CARD.compareTo(operationHistory.getHistoryType())) {
-                                cardType = Card.getCardType(operationHistory.getCards(), 1 == gameRules >> 1 % 2);
+                                cardType = Card.getCardType(operationHistory.getCards(), 1 == (gameRules >> 1) % 2);
                                 value = Card.getCardValue(operationHistory.getCards(), cardType);
                                 cardSize = operationHistory.getCards().size();
                                 break;
@@ -1004,7 +1024,7 @@ public class Room {
                             pass(userId, actionResponse, response, redisService);
                             return;
                         } else {
-                            CardType myCardType = Card.getCardType(cardList, 1 == gameRules >> 1 % 2);
+                            CardType myCardType = Card.getCardType(cardList, 1 == (gameRules >> 1) % 2);
                             if (0 == myCardType.compareTo(CardType.ERROR)) {
                                 System.out.println("牌型错误");
                                 pass(userId, actionResponse, response, redisService);
@@ -1018,7 +1038,7 @@ public class Room {
 
                         //是否出牌
                         if (0 != cardList.size() && seat.isCanPlay()) {
-                            CardType myCardType = Card.getCardType(cardList, 1 == gameRules >> 1 % 2);
+                            CardType myCardType = Card.getCardType(cardList, 1 == (gameRules >> 1) % 2);
 
                             if (0 == myCardType.compareTo(CardType.ERROR)) {
                                 System.out.println("牌型错误");
