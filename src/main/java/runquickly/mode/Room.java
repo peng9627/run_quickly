@@ -186,7 +186,7 @@ public class Room {
                 seat.setReady(false);
                 List<Integer> cardList = new ArrayList<>();
                 for (int i = 0; i < 13; i++) {
-                    int cardIndex = (int) (Math.random() * surplusCards.size());
+                    int cardIndex = 0;
                     if (surplusCards.get(cardIndex) < min && 2 != surplusCards.get(cardIndex)) {
                         min = surplusCards.get(cardIndex);
                         operationSeat = seat.getSeatNo();
@@ -199,15 +199,6 @@ public class Room {
             }
         }
 
-        for (Seat seat : seats) {
-            if (1 == Card.containSize(seat.getCards(), 2)
-                    && 1 == Card.containSize(seat.getCards(), 102)
-                    && 1 == Card.containSize(seat.getCards(), 202)
-                    && 1 == Card.containSize(seat.getCards(), 302)) {
-                gameOver(response, redisService);
-                break;
-            }
-        }
     }
 
     public int getNextSeat() {
@@ -345,6 +336,7 @@ public class Room {
                     seatRecord.setWinOrLose(-score);
                     seatRecord.setMultiple(seat.getMultiple());
                     seatRecords.add(seatRecord);
+                    seatRecord.setScore(seat.getScore());
 
                 } else {
                     winSeat = seat;
@@ -379,6 +371,7 @@ public class Room {
                         seatRecord.setWinOrLose(0);
                         seatRecord.setMultiple(seat.getMultiple());
                         seatRecords.add(seatRecord);
+                        seatRecord.setScore(seat.getScore());
 
                     }
                 } else {
@@ -401,6 +394,7 @@ public class Room {
                     seatRecord.setWinOrLose(-winScore);
                     seatRecord.setMultiple(seat.getMultiple());
                     seatRecords.add(seatRecord);
+                    seatRecord.setScore(seat.getScore());
                     break;
                 }
             }
@@ -423,6 +417,7 @@ public class Room {
         seatRecord.getCards().addAll(winSeat.getCards());
         seatRecord.setWinOrLose(winScore);
         seatRecord.setMultiple(winSeat.getMultiple());
+        seatRecord.setScore(winSeat.getScore());
         seatRecords.add(seatRecord);
 
         record.getSeatRecordList().addAll(seatRecords);
@@ -942,6 +937,15 @@ public class Room {
             RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.build(), seat.getUserId());
         });
 
+        for (Seat seat : seats) {
+            if (1 == Card.containSize(seat.getCards(), 2)
+                    && 1 == Card.containSize(seat.getCards(), 102)
+                    && 1 == Card.containSize(seat.getCards(), 202)
+                    && 1 == Card.containSize(seat.getCards(), 302)) {
+                gameOver(response, redisService);
+                return;
+            }
+        }
         for (Seat seat : seats) {
             if (seat.getSeatNo() == operationSeat) {
                 if (redisService.exists("room_match" + roomNo)) {
