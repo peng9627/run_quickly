@@ -25,6 +25,7 @@ public class Seat {
     private String ip;                          //ip
     private int gamecount;                      //游戏局数
     private int multiple;
+    private String gps;
 
     public int getSeatNo() {
         return seatNo;
@@ -160,6 +161,14 @@ public class Seat {
 
     public void setMultiple(int multiple) {
         this.multiple = multiple;
+    }
+
+    public String getGps() {
+        return gps;
+    }
+
+    public void setGps(String gps) {
+        this.gps = gps;
     }
 
     public void clear() {

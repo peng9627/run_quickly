@@ -638,6 +638,31 @@ public class RunQuicklyClient {
                     GameBase.LoggerRequest loggerRequest = GameBase.LoggerRequest.parseFrom(request.getData());
                     LoggerUtil.logger(userId + "----" + loggerRequest.getLogger());
                     break;
+                case GPS:
+                    if (redisService.exists("room" + messageReceive.roomNo) && !redisService.exists("room_match" + messageReceive.roomNo)) {
+                        while (!redisService.lock("lock_room" + messageReceive.roomNo)) {
+                        }
+                        GameBase.GPSRequest gpsRequest = GameBase.GPSRequest.parseFrom(request.getData());
+                        Room room = JSON.parseObject(redisService.getCache("room" + messageReceive.roomNo), Room.class);
+                        for (Seat seat : room.getSeats()) {
+                            if (seat.getUserId() == userId) {
+                                seat.setGps(gpsRequest.getGps());
+                                System.out.println("gps--------------" + gpsRequest.getGps());
+                                break;
+                            }
+                        }
+                        GameBase.GPSResponse gpsResponse = GameBase.GPSResponse.newBuilder().setGps(gpsRequest.getGps())
+                                .setUserId(userId).build();
+                        response.setOperationType(GameBase.OperationType.GPS).setData(gpsResponse.toByteString());
+                        for (Seat seat : room.getSeats()) {
+                            if (RunQuicklyTcpService.userClients.containsKey(seat.getUserId())) {
+                                messageReceive.send(response.build(), seat.getUserId());
+                            }
+                        }
+                        redisService.addCache("room" + messageReceive.roomNo, JSON.toJSONString(room));
+                        redisService.unlock("lock_room" + messageReceive.roomNo);
+                    }
+                    break;
             }
         } catch (InvalidProtocolBufferException e) {
             logger.error(e.toString(), e);

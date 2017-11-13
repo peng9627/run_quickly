@@ -47,12 +47,21 @@ public final class RunQuickly {
 
     /**
      * <pre>
-     *低位到高位顺序（不可反打，飞机炸）
+     *低位到高位顺序（不可反打，飞机炸,GPS）
      * </pre>
      *
      * <code>uint32 gameRules = 4;</code>
      */
     int getGameRules();
+
+      /**
+       * <pre>
+       * AA支付
+       * </pre>
+       * <p>
+       * <code>bool aa = 5;</code>
+       */
+      boolean getAa();
   }
   /**
    * <pre>
@@ -73,7 +82,8 @@ public final class RunQuickly {
       baseScore_ = 0;
       gameTimes_ = 0;
       count_ = 0;
-      gameRules_ = 0;
+        gameRules_ = 0;
+      aa_ = false;
     }
 
     @java.lang.Override
@@ -116,11 +126,16 @@ public final class RunQuickly {
               count_ = input.readUInt32();
               break;
             }
-            case 32: {
+              case 32: {
 
-              gameRules_ = input.readUInt32();
-              break;
-            }
+                  gameRules_ = input.readUInt32();
+                  break;
+              }
+              case 40: {
+
+                  aa_ = input.readBool();
+                  break;
+              }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -185,16 +200,31 @@ public final class RunQuickly {
 
     public static final int GAMERULES_FIELD_NUMBER = 4;
     private int gameRules_;
-    /**
-     * <pre>
-     *低位到高位顺序（不可反打，飞机炸）
+
+      /**
+       * <pre>
+     *低位到高位顺序（不可反打，飞机炸,GPS）
      * </pre>
      *
      * <code>uint32 gameRules = 4;</code>
      */
-    public int getGameRules() {
-      return gameRules_;
-    }
+      public int getGameRules() {
+          return gameRules_;
+      }
+
+      public static final int AA_FIELD_NUMBER = 5;
+      private boolean aa_;
+
+      /**
+       * <pre>
+       * AA支付
+       * </pre>
+       * <p>
+       * <code>bool aa = 5;</code>
+       */
+      public boolean getAa() {
+          return aa_;
+      }
 
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -217,9 +247,12 @@ public final class RunQuickly {
       if (count_ != 0) {
         output.writeUInt32(3, count_);
       }
-      if (gameRules_ != 0) {
-        output.writeUInt32(4, gameRules_);
-      }
+        if (gameRules_ != 0) {
+            output.writeUInt32(4, gameRules_);
+        }
+        if (aa_ != false) {
+            output.writeBool(5, aa_);
+        }
     }
 
     public int getSerializedSize() {
@@ -239,10 +272,14 @@ public final class RunQuickly {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(3, count_);
       }
-      if (gameRules_ != 0) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(4, gameRules_);
-      }
+        if (gameRules_ != 0) {
+            size += com.google.protobuf.CodedOutputStream
+                    .computeUInt32Size(4, gameRules_);
+        }
+        if (aa_ != false) {
+            size += com.google.protobuf.CodedOutputStream
+                    .computeBoolSize(5, aa_);
+        }
       memoizedSize = size;
       return size;
     }
@@ -266,7 +303,9 @@ public final class RunQuickly {
       result = result && (getCount()
           == other.getCount());
       result = result && (getGameRules()
-          == other.getGameRules());
+              == other.getGameRules());
+        result = result && (getAa()
+          == other.getAa());
       return result;
     }
 
@@ -284,7 +323,10 @@ public final class RunQuickly {
       hash = (37 * hash) + COUNT_FIELD_NUMBER;
       hash = (53 * hash) + getCount();
       hash = (37 * hash) + GAMERULES_FIELD_NUMBER;
-      hash = (53 * hash) + getGameRules();
+        hash = (53 * hash) + getGameRules();
+        hash = (37 * hash) + AA_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+                getAa());
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -422,9 +464,11 @@ public final class RunQuickly {
 
         gameTimes_ = 0;
 
-        count_ = 0;
+          count_ = 0;
 
         gameRules_ = 0;
+
+        aa_ = false;
 
         return this;
       }
@@ -451,7 +495,8 @@ public final class RunQuickly {
         result.baseScore_ = baseScore_;
         result.gameTimes_ = gameTimes_;
         result.count_ = count_;
-        result.gameRules_ = gameRules_;
+          result.gameRules_ = gameRules_;
+        result.aa_ = aa_;
         onBuilt();
         return result;
       }
@@ -502,9 +547,12 @@ public final class RunQuickly {
         if (other.getCount() != 0) {
           setCount(other.getCount());
         }
-        if (other.getGameRules() != 0) {
-          setGameRules(other.getGameRules());
-        }
+          if (other.getGameRules() != 0) {
+              setGameRules(other.getGameRules());
+          }
+          if (other.getAa() != false) {
+              setAa(other.getAa());
+          }
         onChanged();
         return this;
       }
@@ -645,20 +693,20 @@ public final class RunQuickly {
         return this;
       }
 
-      private int gameRules_ ;
+        private int gameRules_ ;
       /**
        * <pre>
-       *低位到高位顺序（不可反打，飞机炸）
+       *低位到高位顺序（不可反打，飞机炸,GPS）
        * </pre>
        *
        * <code>uint32 gameRules = 4;</code>
        */
       public int getGameRules() {
-        return gameRules_;
+          return gameRules_;
       }
       /**
        * <pre>
-       *低位到高位顺序（不可反打，飞机炸）
+       *低位到高位顺序（不可反打，飞机炸,GPS）
        * </pre>
        *
        * <code>uint32 gameRules = 4;</code>
@@ -667,21 +715,62 @@ public final class RunQuickly {
         
         gameRules_ = value;
         onChanged();
-        return this;
+          return this;
       }
       /**
        * <pre>
-       *低位到高位顺序（不可反打，飞机炸）
+       *低位到高位顺序（不可反打，飞机炸,GPS）
        * </pre>
        *
        * <code>uint32 gameRules = 4;</code>
        */
       public Builder clearGameRules() {
-        
-        gameRules_ = 0;
-        onChanged();
-        return this;
+
+          gameRules_ = 0;
+          onChanged();
+          return this;
       }
+
+        private boolean aa_;
+
+        /**
+         * <pre>
+         * AA支付
+         * </pre>
+         * <p>
+         * <code>bool aa = 5;</code>
+         */
+        public boolean getAa() {
+            return aa_;
+        }
+
+        /**
+         * <pre>
+         * AA支付
+         * </pre>
+         * <p>
+         * <code>bool aa = 5;</code>
+         */
+        public Builder setAa(boolean value) {
+
+            aa_ = value;
+            onChanged();
+            return this;
+        }
+
+        /**
+         * <pre>
+         * AA支付
+         * </pre>
+         * <p>
+         * <code>bool aa = 5;</code>
+         */
+        public Builder clearAa() {
+
+            aa_ = false;
+            onChanged();
+            return this;
+        }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return this;
@@ -8271,35 +8360,36 @@ public final class RunQuickly {
       internal_static_RunQuicklyReplayResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
-      getDescriptor() {
-    return descriptor;
+  getDescriptor() {
+      return descriptor;
   }
-  private static  com.google.protobuf.Descriptors.FileDescriptor
+
+    private static com.google.protobuf.Descriptors.FileDescriptor
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\020runQuickly.proto\032\016gameBase.proto\"`\n\026Ru" +
-      "nQuicklyIntoResponse\022\021\n\tbaseScore\030\001 \001(\r\022" +
-      "\021\n\tgameTimes\030\002 \001(\r\022\r\n\005count\030\003 \001(\r\022\021\n\tgam" +
-      "eRules\030\004 \001(\r\"|\n\022RunQuicklyGameInfo\022&\n\005se" +
-      "ats\030\001 \003(\0132\027.RunQuicklySeatGameInfo\022\021\n\tga" +
-      "meCount\030\002 \001(\r\022\021\n\tgameTimes\030\003 \001(\r\022\030\n\020last" +
-      "PlayCardUser\030\004 \001(\r\"p\n\026RunQuicklySeatGame" +
-      "Info\022\n\n\002ID\030\001 \001(\r\022\r\n\005cards\030\002 \003(\005\022\021\n\tcards" +
-      "Size\030\003 \001(\r\022\024\n\014desktopCards\030\004 \003(\005\022\022\n\npass" +
-      "Status\030\005 \001(\010\"(\n\027RunQuicklyStartResponse\022",
-      "\r\n\005cards\030\001 \003(\005\"\"\n\022RunQuicklyPlayCard\022\014\n\004" +
-      "card\030\001 \003(\005\"W\n\030RunQuicklyResultResponse\022!" +
-      "\n\006result\030\001 \003(\0132\021.RunQuicklyResult\022\030\n\020rea" +
-      "dyTimeCounter\030\002 \001(\005\"W\n\020RunQuicklyResult\022" +
-      "\n\n\002ID\030\001 \001(\r\022\024\n\014currentScore\030\002 \001(\005\022\022\n\ntot" +
-      "alScore\030\003 \001(\005\022\r\n\005cards\030\004 \003(\005\"H\n\031RunQuick" +
-      "lyBalanceResponse\022+\n\013gameBalance\030\001 \003(\0132\026" +
-      ".RunQuicklySeatBalance\"H\n\025RunQuicklySeat" +
-      "Balance\022\n\n\002ID\030\001 \001(\r\022\021\n\twinOrLose\030\002 \001(\005\022\020" +
-      "\n\010winCount\030\003 \001(\r\">\n\030RunQuicklyReplayResp",
-      "onse\022\"\n\007history\030\001 \003(\0132\021.OperationHistory" +
-      "B\021\n\017runquickly.modeb\006proto3"
+      "\n\020runQuickly.proto\032\016gameBase.proto\"l\n\026Ru" +
+              "nQuicklyIntoResponse\022\021\n\tbaseScore\030\001 \001(\r\022" +
+              "\021\n\tgameTimes\030\002 \001(\r\022\r\n\005count\030\003 \001(\r\022\021\n\tgam" +
+              "eRules\030\004 \001(\r\022\n\n\002aa\030\005 \001(\010\"|\n\022RunQuicklyGa" +
+              "meInfo\022&\n\005seats\030\001 \003(\0132\027.RunQuicklySeatGa" +
+              "meInfo\022\021\n\tgameCount\030\002 \001(\r\022\021\n\tgameTimes\030\003" +
+              " \001(\r\022\030\n\020lastPlayCardUser\030\004 \001(\r\"p\n\026RunQui" +
+              "cklySeatGameInfo\022\n\n\002ID\030\001 \001(\r\022\r\n\005cards\030\002 " +
+              "\003(\005\022\021\n\tcardsSize\030\003 \001(\r\022\024\n\014desktopCards\030\004" +
+              " \003(\005\022\022\n\npassStatus\030\005 \001(\010\"(\n\027RunQuicklySt",
+            "artResponse\022\r\n\005cards\030\001 \003(\005\"\"\n\022RunQuickly" +
+                    "PlayCard\022\014\n\004card\030\001 \003(\005\"W\n\030RunQuicklyResu" +
+                    "ltResponse\022!\n\006result\030\001 \003(\0132\021.RunQuicklyR" +
+                    "esult\022\030\n\020readyTimeCounter\030\002 \001(\005\"W\n\020RunQu" +
+                    "icklyResult\022\n\n\002ID\030\001 \001(\r\022\024\n\014currentScore\030" +
+                    "\002 \001(\005\022\022\n\ntotalScore\030\003 \001(\005\022\r\n\005cards\030\004 \003(\005" +
+                    "\"H\n\031RunQuicklyBalanceResponse\022+\n\013gameBal" +
+                    "ance\030\001 \003(\0132\026.RunQuicklySeatBalance\"H\n\025Ru" +
+                    "nQuicklySeatBalance\022\n\n\002ID\030\001 \001(\r\022\021\n\twinOr" +
+                    "Lose\030\002 \001(\005\022\020\n\010winCount\030\003 \001(\r\">\n\030RunQuick",
+      "lyReplayResponse\022\"\n\007history\030\001 \003(\0132\021.Oper" +
+      "ationHistoryB\021\n\017runquickly.modeb\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -8317,9 +8407,9 @@ public final class RunQuickly {
     internal_static_RunQuicklyIntoResponse_descriptor =
       getDescriptor().getMessageTypes().get(0);
     internal_static_RunQuicklyIntoResponse_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+            com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_RunQuicklyIntoResponse_descriptor,
-        new java.lang.String[] { "BaseScore", "GameTimes", "Count", "GameRules", });
+        new java.lang.String[] { "BaseScore", "GameTimes", "Count", "GameRules", "Aa", });
     internal_static_RunQuicklyGameInfo_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_RunQuicklyGameInfo_fieldAccessorTable = new
