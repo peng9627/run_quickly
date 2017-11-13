@@ -116,7 +116,8 @@ public class PlayCardTimeout extends Thread {
                     }
 
                     new PlayCardTimeout(operationSeat.getUserId(), roomNo, room.getHistoryList().size(), gameCount, redisService).start();
-                    GameBase.RoundResponse roundResponse = GameBase.RoundResponse.newBuilder().setID(operationSeat.getUserId()).build();
+                    GameBase.RoundResponse roundResponse = GameBase.RoundResponse.newBuilder()
+                            .setOnlyBomb(!operationSeat.isCanPlay()).setID(operationSeat.getUserId()).build();
                     response.setOperationType(GameBase.OperationType.ROUND).setData(roundResponse.toByteString());
                     room.getSeats().stream().filter(seat1 -> RunQuicklyTcpService.userClients.containsKey(seat1.getUserId()))
                             .forEach(seat1 -> RunQuicklyTcpService.userClients.get(seat1.getUserId()).send(response.build(), seat1.getUserId()));
@@ -142,7 +143,8 @@ public class PlayCardTimeout extends Thread {
                     }
 
                     new PlayCardTimeout(operationSeat.getUserId(), roomNo, room.getHistoryList().size(), gameCount, redisService).start();
-                    GameBase.RoundResponse roundResponse = GameBase.RoundResponse.newBuilder().setID(operationSeat.getUserId()).build();
+                    GameBase.RoundResponse roundResponse = GameBase.RoundResponse.newBuilder()
+                            .setOnlyBomb(!operationSeat.isCanPlay()).setID(operationSeat.getUserId()).build();
                     response.setOperationType(GameBase.OperationType.ROUND).setData(roundResponse.toByteString());
                     room.getSeats().stream().filter(seat1 -> RunQuicklyTcpService.userClients.containsKey(seat1.getUserId()))
                             .forEach(seat1 -> RunQuicklyTcpService.userClients.get(seat1.getUserId()).send(response.build(), seat1.getUserId()));

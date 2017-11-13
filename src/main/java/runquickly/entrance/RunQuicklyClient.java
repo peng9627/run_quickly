@@ -254,7 +254,8 @@ public class RunQuicklyClient {
                                         time = 8 - (int) ((new Date().getTime() - room.getHistoryList().get(room.getHistoryList().size() - 1).getDate().getTime() / 1000));
                                     }
                                 }
-                                GameBase.RoundResponse roundResponse = GameBase.RoundResponse.newBuilder().setTimeCounter(time > 0 ? time : 0).setID(operationSeat.getUserId()).build();
+                                GameBase.RoundResponse roundResponse = GameBase.RoundResponse.newBuilder().setTimeCounter(time > 0 ? time : 0)
+                                        .setOnlyBomb(!operationSeat.isCanPlay()).setID(operationSeat.getUserId()).build();
                                 response.setOperationType(GameBase.OperationType.ROUND).setData(roundResponse.toByteString());
                                 messageReceive.send(response.build(), userId);
                             }

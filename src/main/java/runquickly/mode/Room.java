@@ -210,7 +210,7 @@ public class Room {
                 next += 1;
             }
             for (Seat seat : seats) {
-                if (seat.getSeatNo() == next && seat.isCanPlay()) {
+                if (seat.getSeatNo() == next) {
                     return next;
                 }
             }
@@ -941,7 +941,8 @@ public class Room {
             if (1 == Card.containSize(seat.getCards(), 2)
                     && 1 == Card.containSize(seat.getCards(), 102)
                     && 1 == Card.containSize(seat.getCards(), 202)
-                    && 1 == Card.containSize(seat.getCards(), 302)) {
+                    && 1 == Card.containSize(seat.getCards(), 302)
+                    && 1 == (gameRules >> 2) % 2) {
                 gameOver(response, redisService);
                 return;
             }
@@ -952,7 +953,8 @@ public class Room {
                     new PlayCardTimeout(seat.getUserId(), roomNo, historyList.size(), gameCount, redisService).start();
                 }
                 GameBase.RoundResponse roundResponse = GameBase.RoundResponse.newBuilder().setID(seat.getUserId())
-                        .setTimeCounter(redisService.exists("room_match" + roomNo) ? 8 : 0).build();
+                        .setTimeCounter(redisService.exists("room_match" + roomNo) ? 8 : 0)
+                        .setOnlyBomb(!seat.isCanPlay()).build();
                 response.setOperationType(GameBase.OperationType.ROUND).setData(roundResponse.toByteString());
                 for (Seat seat1 : seats) {
                     if (RunQuicklyTcpService.userClients.containsKey(seat1.getUserId())) {
@@ -1025,13 +1027,18 @@ public class Room {
                         }
                         if (0 == cardList.size()) {
                             System.out.println("必须出牌");
-                            pass(userId, actionResponse, response, redisService);
+//                            pass(userId, actionResponse, response, redisService);
+                            cardList.add(seat.getCards().get(0));
+                            playCard(userId, cardList, response, redisService, actionResponse);
                             return;
                         } else {
                             CardType myCardType = Card.getCardType(cardList, 1 == (gameRules >> 1) % 2);
                             if (0 == myCardType.compareTo(CardType.ERROR)) {
                                 System.out.println("牌型错误");
-                                pass(userId, actionResponse, response, redisService);
+//                                pass(userId, actionResponse, response, redisService);
+                                cardList = new ArrayList<>();
+                                cardList.add(seat.getCards().get(0));
+                                playCard(userId, cardList, response, redisService, actionResponse);
                                 return;
                             }
                             if (myCardType == CardType.ZHADAN) {
@@ -1041,8 +1048,13 @@ public class Room {
                     } else {
 
                         //是否出牌
-                        if (0 != cardList.size() && seat.isCanPlay()) {
+                        if (0 != cardList.size()) {
                             CardType myCardType = Card.getCardType(cardList, 1 == (gameRules >> 1) % 2);
+
+                            if (!seat.isCanPlay() && 0 != myCardType.compareTo(CardType.ZHADAN)) {
+                                System.out.println("不可反打");
+                                pass(userId, actionResponse, response, redisService);
+                            }
 
                             if (0 == myCardType.compareTo(CardType.ERROR)) {
                                 System.out.println("牌型错误");
@@ -1094,7 +1106,8 @@ public class Room {
                                 new PlayCardTimeout(operationSeat.getUserId(), roomNo, historyList.size(), gameCount, redisService).start();
                             }
                             GameBase.RoundResponse roundResponse = GameBase.RoundResponse.newBuilder()
-                                    .setTimeCounter(redisService.exists("room_match" + roomNo) ? 8 : 0).setID(operationSeat.getUserId()).build();
+                                    .setTimeCounter(redisService.exists("room_match" + roomNo) ? 8 : 0)
+                                    .setOnlyBomb(!operationSeat.isCanPlay()).setID(operationSeat.getUserId()).build();
                             response.setOperationType(GameBase.OperationType.ROUND).setData(roundResponse.toByteString());
                             seats.stream().filter(seat1 -> RunQuicklyTcpService.userClients.containsKey(seat1.getUserId()))
                                     .forEach(seat1 -> RunQuicklyTcpService.userClients.get(seat1.getUserId()).send(response.build(), seat1.getUserId()));
@@ -1129,7 +1142,8 @@ public class Room {
                         new PlayCardTimeout(operationSeat.getUserId(), roomNo, historyList.size(), gameCount, redisService).start();
                     }
                     GameBase.RoundResponse roundResponse = GameBase.RoundResponse.newBuilder()
-                            .setTimeCounter(redisService.exists("room_match" + roomNo) ? 8 : 0).setID(operationSeat.getUserId()).build();
+                            .setTimeCounter(redisService.exists("room_match" + roomNo) ? 8 : 0)
+                            .setOnlyBomb(!operationSeat.isCanPlay()).setID(operationSeat.getUserId()).build();
                     response.setOperationType(GameBase.OperationType.ROUND).setData(roundResponse.toByteString());
                     seats.stream().filter(seat1 -> RunQuicklyTcpService.userClients.containsKey(seat1.getUserId()))
                             .forEach(seat1 -> RunQuicklyTcpService.userClients.get(seat1.getUserId()).send(response.build(), seat1.getUserId()));
@@ -1197,8 +1211,27 @@ public class Room {
                 if (redisService.exists("room_match" + roomNo)) {
                     new PlayCardTimeout(operationSeat.getUserId(), roomNo, historyList.size(), gameCount, redisService).start();
                 }
+
+                canPass = false;
+                if (historyList.size() > 0) {
+                    for (int i = historyList.size() - 1; i > historyList.size() - count && i > -1; i--) {
+                        OperationHistory operationHistory = historyList.get(i);
+                        if (operationHistory.getUserId() == operationSeat.getUserId()) {
+                            break;
+                        }
+                        if (0 == OperationHistoryType.PLAY_CARD.compareTo(operationHistory.getHistoryType())) {
+                            canPass = true;
+                            break;
+                        }
+                    }
+                }
+                if (!canPass) {
+                    operationSeat.setCanPlay(true);
+                }
+
                 GameBase.RoundResponse roundResponse = GameBase.RoundResponse.newBuilder()
-                        .setTimeCounter(redisService.exists("room_match" + roomNo) ? 8 : 0).setID(operationSeat.getUserId()).build();
+                        .setTimeCounter(redisService.exists("room_match" + roomNo) ? 8 : 0)
+                        .setOnlyBomb(!operationSeat.isCanPlay()).setID(operationSeat.getUserId()).build();
                 response.setOperationType(GameBase.OperationType.ROUND).setData(roundResponse.toByteString());
                 seats.stream().filter(seat1 -> RunQuicklyTcpService.userClients.containsKey(seat1.getUserId()))
                         .forEach(seat1 -> RunQuicklyTcpService.userClients.get(seat1.getUserId()).send(response.build(), seat1.getUserId()));
