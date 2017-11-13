@@ -186,7 +186,7 @@ public class Room {
                 seat.setReady(false);
                 List<Integer> cardList = new ArrayList<>();
                 for (int i = 0; i < 13; i++) {
-                    int cardIndex = 0;
+                    int cardIndex = (int) (Math.random() * surplusCards.size());
                     if (surplusCards.get(cardIndex) < min && 2 != surplusCards.get(cardIndex)) {
                         min = surplusCards.get(cardIndex);
                         operationSeat = seat.getSeatNo();
