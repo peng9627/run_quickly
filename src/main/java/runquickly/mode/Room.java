@@ -38,6 +38,7 @@ public class Room {
     private List<Record> recordList = new ArrayList<>();//战绩
     private int gameRules;
     private Date startDate;
+    private boolean aa;
 
     public int getBaseScore() {
         return baseScore;
@@ -157,6 +158,14 @@ public class Room {
 
     public void setStartDate(Date startDate) {
         this.startDate = startDate;
+    }
+
+    public boolean isAa() {
+        return aa;
+    }
+
+    public void setAa(boolean aa) {
+        this.aa = aa;
     }
 
     public void addSeat(User user, int score) {

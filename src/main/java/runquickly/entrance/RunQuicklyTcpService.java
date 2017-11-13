@@ -44,7 +44,7 @@ public class RunQuicklyTcpService implements Runnable {
         ShardedJedisPool shardedJedisPool = new ShardedJedisPool(jedisPoolConfig, shards);
         RedisService redisService = new RedisService(shardedJedisPool);
 
-        int port = 10002;
+        int port = 10402;
         try {
             serverSocket = new ServerSocket(port);
             started = true;
