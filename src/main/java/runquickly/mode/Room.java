@@ -237,6 +237,11 @@ public class Room {
         }
         if (0 == multiple) {
             multiple = 1;
+        } else {
+            multiple = 1;
+            for (Seat seat : seats) {
+                multiple *= seat.getMultiple() == 0 ? 1 : seat.getMultiple();
+            }
         }
 
         RunQuickly.RunQuicklyResultResponse.Builder resultResponse = RunQuickly.RunQuicklyResultResponse.newBuilder();
