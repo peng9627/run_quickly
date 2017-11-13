@@ -235,7 +235,7 @@ public class Room {
                 break;
             }
         }
-        if (0 == multiple) {
+        if (0 == multiple || 1 == multiple) {
             multiple = 1;
         } else {
             multiple = 1;
