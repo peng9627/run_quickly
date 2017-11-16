@@ -901,7 +901,7 @@ public class Room {
     public void sendRoomInfo(GameBase.RoomCardIntoResponse.Builder roomCardIntoResponseBuilder, GameBase.BaseConnection.Builder response, int userId) {
         RunQuickly.RunQuicklyIntoResponse intoResponse = RunQuickly.RunQuicklyIntoResponse.newBuilder()
                 .setBaseScore(baseScore).setCount(count).setGameTimes(gameTimes)
-                .setGameRules(gameRules).build();
+                .setGameRules(gameRules).setAa(aa).build();
         roomCardIntoResponseBuilder.setError(GameBase.ErrorCode.SUCCESS).setData(intoResponse.toByteString());
         roomCardIntoResponseBuilder.setGameType(GameBase.GameType.RUN_QUICKLY);
         response.setOperationType(GameBase.OperationType.ROOM_INFO).setData(roomCardIntoResponseBuilder.build().toByteString());

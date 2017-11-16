@@ -275,8 +275,11 @@ public class RunQuicklyClient {
                                 }
                             }
 
+                            int s = Integer.parseInt(redisService.getCache("dissolve_time" + messageReceive.roomNo));
+
                             GameBase.DissolveApply dissolveApply = GameBase.DissolveApply.newBuilder()
-                                    .setError(GameBase.ErrorCode.SUCCESS).setUserId(Integer.valueOf(user)).build();
+                                    .setError(GameBase.ErrorCode.SUCCESS).setUserId(Integer.valueOf(user))
+                                    .setTime(300 - ((int) (System.currentTimeMillis() / 1000) - s)).build();
                             response.setOperationType(GameBase.OperationType.DISSOLVE).setData(dissolveApply.toByteString());
                             if (RunQuicklyTcpService.userClients.containsKey(userId)) {
                                 messageReceive.send(response.build(), userId);
@@ -470,9 +473,10 @@ public class RunQuicklyClient {
                         }
                         if (!redisService.exists("dissolve" + messageReceive.roomNo) && !redisService.exists("delete_dissolve" + messageReceive.roomNo)) {
                             GameBase.DissolveApply dissolveApply = GameBase.DissolveApply.newBuilder()
-                                    .setError(GameBase.ErrorCode.SUCCESS).setUserId(userId).build();
+                                    .setError(GameBase.ErrorCode.SUCCESS).setUserId(userId).setTime(300).build();
                             Room room = JSON.parseObject(redisService.getCache("room" + messageReceive.roomNo), Room.class);
                             redisService.addCache("dissolve" + messageReceive.roomNo, "-1" + userId);
+                            redisService.addCache("dissolve_time" + messageReceive.roomNo, (System.currentTimeMillis() / 1000) + "");
                             response.setOperationType(GameBase.OperationType.DISSOLVE).setData(dissolveApply.toByteString());
                             for (Seat seat : room.getSeats()) {
                                 if (RunQuicklyTcpService.userClients.containsKey(seat.getUserId())) {
@@ -544,7 +548,7 @@ public class RunQuicklyClient {
                                 }
                             }
 
-                            if (disagree >= room.getSeats().size() / 2) {
+                            if (disagree >= 1) {
                                 GameBase.DissolveConfirm dissolveConfirm = GameBase.DissolveConfirm.newBuilder().setDissolved(false).build();
                                 response.setOperationType(GameBase.OperationType.DISSOLVE_CONFIRM).setData(dissolveConfirm.toByteString());
                                 for (Seat seat : room.getSeats()) {
@@ -553,8 +557,8 @@ public class RunQuicklyClient {
                                     }
                                 }
                                 redisService.delete("dissolve" + messageReceive.roomNo);
-                                redisService.addCache("delete_dissolve" + messageReceive.roomNo, "", 60);
-                            } else if (agree > room.getSeats().size() / 2) {
+//                                redisService.addCache("delete_dissolve" + messageReceive.roomNo, "", 60);
+                            } else if (agree == room.getSeats().size()) {
                                 GameBase.DissolveConfirm dissolveConfirm = GameBase.DissolveConfirm.newBuilder().setDissolved(true).build();
                                 response.setOperationType(GameBase.OperationType.DISSOLVE_CONFIRM).setData(dissolveConfirm.toByteString());
                                 for (Seat seat : room.getSeats()) {
@@ -600,7 +604,7 @@ public class RunQuicklyClient {
                                 .setToUserId(appointInteraction.getToUserId()).setContentIndex(appointInteraction.getContentIndex()).build();
                         for (Seat seat : room.getSeats()) {
                             if (RunQuicklyTcpService.userClients.containsKey(seat.getUserId())) {
-                                messageReceive.send(response.setOperationType(GameBase.OperationType.MESSAGE)
+                                messageReceive.send(response.setOperationType(GameBase.OperationType.INTERACTION)
                                         .setData(appointInteractionResponse.toByteString()).build(), seat.getUserId());
                             }
                         }
