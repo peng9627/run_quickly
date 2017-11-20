@@ -40,6 +40,8 @@ public class Room {
     private Date startDate;
     private boolean aa;
 
+    private CardType cardType;
+
     public int getBaseScore() {
         return baseScore;
     }
@@ -168,6 +170,14 @@ public class Room {
         this.aa = aa;
     }
 
+    public CardType getCardType() {
+        return cardType;
+    }
+
+    public void setCardType(CardType cardType) {
+        this.cardType = cardType;
+    }
+
     public void addSeat(User user, int score) {
         Seat seat = new Seat();
         seat.setRobot(false);
@@ -188,15 +198,24 @@ public class Room {
 
     public void dealCard(GameBase.BaseConnection.Builder response, RedisService redisService) {
         startDate = new Date();
-        int min = 14;
+        int min = 314;
         if (operationSeat == 0) {
             List<Integer> surplusCards = Card.getAllCard();
+            int cardSize = 13;
+            if (3 == count) {
+                surplusCards.removeAll(Arrays.asList(2, 102, 202, 314));
+                cardSize = 16;
+            }
             for (Seat seat : seats) {
                 seat.setReady(false);
                 List<Integer> cardList = new ArrayList<>();
-                for (int i = 0; i < 13; i++) {
+                for (int i = 0; i < cardSize; i++) {
                     int cardIndex = (int) (Math.random() * surplusCards.size());
-                    if (surplusCards.get(cardIndex) < min && 2 != surplusCards.get(cardIndex)) {
+//                    int cardIndex = (int) (Math.random() * 10);
+                    if (surplusCards.size() <= cardIndex) {
+                        cardIndex = 0;
+                    }
+                    if (surplusCards.get(cardIndex) < min && 302 < surplusCards.get(cardIndex)) {
                         min = surplusCards.get(cardIndex);
                         operationSeat = seat.getSeatNo();
                     }
@@ -325,10 +344,11 @@ public class Room {
                         && 1 == (gameRules >> 2) % 2)) {
                     int score = 0;
                     int cardSize = seat.getCards().size();
-                    if (cardSize == 13) {
-                        score = 30;
-                    } else if (cardSize > 9) {
-                        score = cardSize * 2;
+                    int maxCardSize = count == 3 ? 16 : 13;
+                    if (cardSize == maxCardSize) {
+                        score = cardSize * 2;//关
+                    } else if (0 < historyList.size() && seat.getUserId() == historyList.get(0).getUserId() && cardSize + historyList.get(0).getCards().size() == maxCardSize) {
+                        score = cardSize * 2;//反关
                     } else {
                         score = cardSize;
                     }
@@ -361,10 +381,11 @@ public class Room {
                 if (seat.getCards().size() > 0) {
                     int score = 0;
                     int cardSize = seat.getCards().size();
-                    if (cardSize == 13) {
-                        score = 30;
-                    } else if (cardSize > 9) {
-                        score = cardSize * 2;
+                    int maxCardSize = count == 3 ? 16 : 13;
+                    if (cardSize == maxCardSize) {
+                        score = cardSize * 2;//关
+                    } else if (0 < historyList.size() && seat.getUserId() == historyList.get(0).getUserId() && cardSize + historyList.get(0).getCards().size() == maxCardSize) {
+                        score = cardSize * 2;//反关
                     } else {
                         score = cardSize;
                     }
@@ -464,6 +485,20 @@ public class Room {
             response.setOperationType(GameBase.OperationType.RESULT).setData(resultResponse.build().toByteString());
             seats.stream().filter(seat -> RunQuicklyTcpService.userClients.containsKey(seat.getUserId()))
                     .forEach(seat -> RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.build(), seat.getUserId()));
+            if (1 == gameCount && aa) {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("flowType", 2);
+                jsonObject.put("money", 1);
+                jsonObject.put("description", "AA支付" + roomNo);
+                for (Seat seat : seats) {
+                    jsonObject.put("userId", seat.getUserId());
+                    ApiResponse moneyDetail = JSON.parseObject(HttpUtil.urlConnectionByRsa(Constant.apiUrl + Constant.moneyDetailedCreate, jsonObject.toJSONString()), new TypeReference<ApiResponse<User>>() {
+                    });
+                    if (0 != moneyDetail.getCode()) {
+                        LoggerFactory.getLogger(this.getClass()).error(Constant.apiUrl + Constant.moneyDetailedCreate + "?" + jsonObject.toJSONString());
+                    }
+                }
+            }
         }
         clear();
 
@@ -795,13 +830,13 @@ public class Room {
                 jsonObject.put("flowType", 1);
                 switch (gameTimes) {
                     case 4:
-                        jsonObject.put("money", 1);
+                        jsonObject.put("money", 3);
                         break;
                     case 8:
-                        jsonObject.put("money", 2);
+                        jsonObject.put("money", 4);
                         break;
-                    case 16:
-                        jsonObject.put("money", 3);
+                    case 12:
+                        jsonObject.put("money", 5);
                         break;
                 }
                 jsonObject.put("description", "开房间退回" + roomNo);
@@ -896,6 +931,7 @@ public class Room {
         lastOperation = 0;
         seats.forEach(Seat::clear);
         startDate = new Date();
+        cardType = null;
     }
 
     public void sendRoomInfo(GameBase.RoomCardIntoResponse.Builder roomCardIntoResponseBuilder, GameBase.BaseConnection.Builder response, int userId) {
@@ -990,7 +1026,7 @@ public class Room {
      * @param actionResponse
      */
     public void playCard(int userId, List<Integer> cardList, GameBase.BaseConnection.Builder response, RedisService redisService,
-                         GameBase.BaseAction.Builder actionResponse) {
+                         GameBase.BaseAction.Builder actionResponse, CardType playCardType) {
         System.out.println("出牌------");
         for (Integer integers : cardList) {
             System.out.print(integers);
@@ -999,7 +1035,6 @@ public class Room {
             if (seat.getUserId() == userId && operationSeat == seat.getSeatNo()) {
                 if (seat.getCards().containsAll(cardList)) {
                     //判断该出牌的牌型
-                    CardType cardType = null;
                     int value = 0;
                     int cardSize = 0;
                     //出牌正确性验证
@@ -1010,13 +1045,13 @@ public class Room {
                                 break;
                             }
                             if (0 == OperationHistoryType.PLAY_CARD.compareTo(operationHistory.getHistoryType())) {
-                                cardType = Card.getCardType(operationHistory.getCards(), 1 == (gameRules >> 1) % 2);
                                 value = Card.getCardValue(operationHistory.getCards(), cardType);
                                 cardSize = operationHistory.getCards().size();
                                 break;
                             }
                         }
                     } else {
+                        //必须出最小的
                         List<Integer> temps = new ArrayList<>();
                         temps.addAll(seat.getCards());
                         temps.sort(new Comparator<Integer>() {
@@ -1025,8 +1060,11 @@ public class Room {
                                 return o1.compareTo(o2);
                             }
                         });
-                        if (1 == Card.containSize(temps, 2)) {
-                            temps.remove(Integer.valueOf(2));
+                        while (temps.get(0) < 300) {
+                            temps.remove(0);
+                        }
+                        if (1 == Card.containSize(temps, 302)) {
+                            temps.remove(Integer.valueOf(302));
                         }
                         if (0 == Card.containSize(cardList, temps.get(0))) {
                             cardList = new ArrayList<>();
@@ -1035,15 +1073,16 @@ public class Room {
                     }
 
                     //如果没出牌
-                    if (null == cardType) {
+                    if (0 == cardSize) {
                         for (Seat seat1 : seats) {
                             seat1.setCanPlay(true);
                         }
                         if (0 == cardList.size()) {
                             System.out.println("必须出牌");
 //                            pass(userId, actionResponse, response, redisService);
+                            cardType = CardType.DANPAI;
                             cardList.add(seat.getCards().get(0));
-                            playCard(userId, cardList, response, redisService, actionResponse);
+                            playCard(userId, cardList, response, redisService, actionResponse, cardType);
                             return;
                         } else {
                             CardType myCardType = Card.getCardType(cardList, 1 == (gameRules >> 1) % 2);
@@ -1052,9 +1091,10 @@ public class Room {
 //                                pass(userId, actionResponse, response, redisService);
                                 cardList = new ArrayList<>();
                                 cardList.add(seat.getCards().get(0));
-                                playCard(userId, cardList, response, redisService, actionResponse);
+                                playCard(userId, cardList, response, redisService, actionResponse, CardType.DANPAI);
                                 return;
                             }
+                            cardType = myCardType;
                             if (myCardType == CardType.ZHADAN) {
                                 seat.setMultiple(seat.getMultiple() * 2);
                             }
@@ -1064,6 +1104,10 @@ public class Room {
                         //是否出牌
                         if (0 != cardList.size()) {
                             CardType myCardType = Card.getCardType(cardList, 1 == (gameRules >> 1) % 2);
+
+                            if (3 == Card.containSize(cardList, 14, false) && 3 == count && cardList.size() == 3) {
+                                myCardType = CardType.ZHADAN;
+                            }
 
                             if (!seat.isCanPlay() && 0 != myCardType.compareTo(CardType.ZHADAN)) {
                                 System.out.println("不可反打");
@@ -1076,6 +1120,15 @@ public class Room {
                                 return;
                             }
 
+                            //牌型
+                            if (playCardType != myCardType) {
+                                if (myCardType == CardType.SIZHANG && playCardType == CardType.SANZHANG) {
+                                    myCardType = CardType.SANZHANG;
+                                } else if (myCardType == CardType.SANLIAN && playCardType == CardType.FEIJI) {
+                                    myCardType = CardType.FEIJI;
+                                }
+                            }
+
                             if (0 == myCardType.compareTo(cardType)) {
                                 //张数相等
                                 if (cardList.size() == cardSize) {
@@ -1085,7 +1138,7 @@ public class Room {
                                         pass(userId, actionResponse, response, redisService);
                                         return;
                                     }
-                                } else if (0 != CardType.ZHADAN.compareTo(cardType) || cardList.size() < cardSize) {
+                                } else if (0 != CardType.ZHADAN.compareTo(myCardType) || (cardList.size() < cardSize && !(3 == Card.containSize(cardList, 14, false) && 3 == count && cardList.size() == 3))) {
                                     System.out.println("出牌错误:张数不同，不是炸弹或张数小于");
                                     pass(userId, actionResponse, response, redisService);
                                     return;
@@ -1134,7 +1187,7 @@ public class Room {
 
                     seat.getCards().removeAll(cardList);
                     RunQuickly.RunQuicklyPlayCard playCardResponse = RunQuickly.RunQuicklyPlayCard.newBuilder()
-                            .addAllCard(cardList).build();
+                            .setCardType(cardType.ordinal()).addAllCard(cardList).build();
                     actionResponse.setOperationId(GameBase.ActionId.PLAY_CARD).setData(playCardResponse.toByteString());
                     response.setOperationType(GameBase.OperationType.ACTION).setData(actionResponse.build().toByteString());
                     seats.stream().filter(seat1 -> RunQuicklyTcpService.userClients.containsKey(seat1.getUserId()))
@@ -1204,8 +1257,263 @@ public class Room {
                     System.out.println("必须出牌");
                     List<Integer> cardList = new ArrayList<>();
                     cardList.add(seat.getCards().get(0));
-                    playCard(userId, cardList, response, redisService, actionResponse);
+                    playCard(userId, cardList, response, redisService, actionResponse, CardType.DANPAI);
                     break;
+                }
+
+
+                //判断该出牌的牌型
+                CardType cardType = null;
+                int value = 0;
+                int cardSize = 0;
+                //出牌正确性验证
+                if (historyList.size() > 0) {
+                    for (int i = historyList.size() - 1; i > historyList.size() - count && i > -1; i--) {
+                        OperationHistory operationHistory = historyList.get(i);
+                        if (operationHistory.getUserId() == userId) {
+                            break;
+                        }
+                        if (0 == OperationHistoryType.PLAY_CARD.compareTo(operationHistory.getHistoryType())) {
+                            cardType = Card.getCardType(operationHistory.getCards(), 1 == (gameRules >> 1) % 2);
+                            //牌型
+                            if (cardType != this.cardType) {
+                                if (cardType == CardType.SIZHANG && this.cardType == CardType.SANZHANG) {
+                                    cardType = CardType.SANZHANG;
+                                } else if (cardType == CardType.SANLIAN && this.cardType == CardType.FEIJI) {
+                                    cardType = CardType.FEIJI;
+                                }
+                            }
+                            if (3 == Card.containSize(operationHistory.getCards(), 14, false) && 3 == count && operationHistory.getCards().size() == 3) {
+                                cardType = CardType.ZHADAN;
+                            }
+                            value = Card.getCardValue(operationHistory.getCards(), cardType);
+                            cardSize = operationHistory.getCards().size();
+                            break;
+                        }
+                    }
+                }
+                if (null != cardType) {
+                    List<Integer> cards = new ArrayList<>();
+                    cards.addAll(seat.getCards());
+                    cards.sort(new Comparator<Integer>() {
+                        @Override
+                        public int compare(Integer o1, Integer o2) {
+                            if (o1 % 100 == 2) {
+                                return 1;
+                            }
+                            if (o2 % 100 == 2) {
+                                return -1;
+                            }
+                            return (o1 % 100 > o2 % 100) ? 1 : -1;
+                        }
+                    });
+                    switch (cardType) {
+                        case DANPAI:
+                            if (cards.get(cards.size() - 1) % 100 > value || (cards.get(cards.size() - 1) % 100 == 2 && value != 15)) {
+                                playCard(userId, cards.subList(cards.size() - 1, cards.size()), response, redisService, actionResponse, CardType.DANPAI);
+                                return;
+                            }
+                            List<Integer> si = Card.get_si(cards);
+                            if (si.size() > 0) {
+                                playCard(userId, si.subList(0, 4), response, redisService, actionResponse, CardType.ZHADAN);
+                                return;
+                            }
+                            break;
+                        case DUIPAI:
+                            List<Integer> dui = Card.get_dui(cards);
+                            if (dui.size() > 0 && (dui.get(dui.size() - 1) % 100 > value || (dui.get(dui.size() - 1) % 100 == 2 && value != 15))) {
+                                playCard(userId, dui.subList(dui.size() - 2, dui.size()), response, redisService, actionResponse, CardType.DUIPAI);
+                                return;
+                            }
+                            si = Card.get_si(cards);
+                            if (si.size() > 0) {
+                                playCard(userId, si.subList(0, 4), response, redisService, actionResponse, CardType.ZHADAN);
+                                return;
+                            }
+                            break;
+                        case LIANDUI:
+                            List<Integer> tempCards = new ArrayList<>();
+                            tempCards.addAll(cards);
+                            dui = Card.get_dui(tempCards);
+                            if (dui.size() == 0) {
+                                break;
+                            }
+                            List<Integer> removeCard = new ArrayList<>();
+                            for (Integer d : dui) {
+                                if (d % 100 <= value) {
+                                    removeCard.add(d);
+                                }
+                            }
+                            Card.removeAll(dui, removeCard);
+                            List<Integer> shunzi = new ArrayList<>();
+                            for (int i = 0; i < dui.size() - (cardSize / 2); i += 2) {
+                                shunzi.clear();
+                                shunzi.add(dui.get(i));
+                                shunzi.add(dui.get(i + 1));
+                                boolean contain = true;
+                                for (int j = 1; j <= cardSize / 2; j++) {
+                                    if (2 > Card.containSize(dui, dui.get(i) + j, false)) {
+                                        contain = false;
+                                        break;
+                                    }
+                                    for (int k = 0; k < dui.size(); k += 2) {
+                                        if (dui.get(k) % 100 == (dui.get(i) + j) % 100) {
+                                            shunzi.add(dui.get(k));
+                                            shunzi.add(dui.get(k + 1));
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (contain) {
+                                    playCard(userId, shunzi, response, redisService, actionResponse, CardType.LIANDUI);
+                                    return;
+                                }
+                            }
+                            si = Card.get_si(cards);
+                            if (si.size() > 0) {
+                                playCard(userId, si.subList(0, 4), response, redisService, actionResponse, CardType.ZHADAN);
+                                return;
+                            }
+                            break;
+                        case SHUNZI:
+                            tempCards = new ArrayList<>();
+                            tempCards.addAll(cards);
+                            removeCard = new ArrayList<>();
+                            for (Integer d : tempCards) {
+                                if (d % 100 <= value) {
+                                    removeCard.add(d);
+                                }
+                            }
+                            Card.removeAll(tempCards, removeCard);
+                            shunzi = new ArrayList<>();
+                            for (int i = 0; i < tempCards.size() - cardSize; i += 1) {
+                                boolean contain = true;
+                                shunzi.clear();
+                                shunzi.add(tempCards.get(i));
+                                for (int j = 1; j < cardSize; j++) {
+                                    if (!Card.contain(tempCards, tempCards.get(i) + j)) {
+                                        contain = false;
+                                        break;
+                                    }
+                                    shunzi.add(tempCards.get(i) + j);
+                                }
+                                if (contain) {
+                                    playCard(userId, shunzi, response, redisService, actionResponse, CardType.SHUNZI);
+                                    return;
+                                }
+                            }
+                            si = Card.get_si(cards);
+                            if (si.size() > 0) {
+                                playCard(userId, si.subList(0, 4), response, redisService, actionResponse, CardType.ZHADAN);
+                                return;
+                            }
+                            break;
+                        case SANZHANG:
+                            tempCards = new ArrayList<>();
+                            tempCards.addAll(cards);
+                            List<Integer> san = Card.get_san(tempCards);
+                            if (san.size() > 0 && (san.get(san.size() - 1) % 100 > value || san.get(san.size() - 1) % 100 == 2)) {
+                                Card.removeAll(tempCards, san.subList(san.size() - 3, san.size()));
+                                if (tempCards.size() >= cardSize - 3) {
+                                    List<Integer> playCard = new ArrayList<>();
+                                    playCard.addAll(san.subList(san.size() - 3, san.size()));
+                                    playCard.addAll(tempCards.subList(0, cardSize - 3));
+                                    playCard(userId, playCard, response, redisService, actionResponse, CardType.SANZHANG);
+                                    return;
+                                }
+                            }
+                            si = Card.get_si(cards);
+                            if (si.size() > 0) {
+                                playCard(userId, si.subList(0, 4), response, redisService, actionResponse, CardType.ZHADAN);
+                                return;
+                            }
+                            break;
+                        case FEIJI:
+                        case SANLIAN:
+                            tempCards = new ArrayList<>();
+                            tempCards.addAll(cards);
+                            san = Card.get_san(tempCards);
+                            if (san.size() == 0) {
+                                break;
+                            }
+                            removeCard = new ArrayList<>();
+                            for (Integer s : san) {
+                                if (s % 100 <= value) {
+                                    removeCard.add(s);
+                                }
+                            }
+                            Card.removeAll(san, removeCard);
+
+                            shunzi = new ArrayList<>();
+                            int size = 0;
+                            if (cardType == CardType.SANLIAN) {
+                                size = cardSize / 3;
+                            } else if (0 == cardSize % 4) {
+                                size = cardSize / 4;
+                            } else if (0 == cardSize % 5) {
+                                size = cardSize / 5;
+                            }
+                            for (int i = 0; i <= san.size() - 3 * size; i += 3) {
+                                boolean contain = true;
+                                shunzi.clear();
+                                shunzi.add(san.get(i));
+                                shunzi.add(san.get(i + 1));
+                                shunzi.add(san.get(i + 2));
+                                for (int j = 1; j < size; j++) {
+                                    if (3 > Card.containSize(san, san.get(i) + j, false)) {
+                                        contain = false;
+                                        break;
+                                    }
+                                    for (int k = 0; k < san.size(); k += 3) {
+                                        if (san.get(k) % 100 == (san.get(i) + j) % 100) {
+                                            shunzi.add(san.get(k));
+                                            shunzi.add(san.get(k + 1));
+                                            shunzi.add(san.get(k + 2));
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if (contain) {
+                                    if (cardType == CardType.FEIJI) {
+                                        Card.removeAll(tempCards, shunzi);
+                                        if ((0 == cardSize % 4 && tempCards.size() >= shunzi.size() / 3) || (0 == cardSize % 5 && tempCards.size() >= 2 * shunzi.size() / 3)) {
+                                            shunzi.addAll(tempCards.subList(0, 0 == cardSize % 4 ? shunzi.size() / 3 : 2 * shunzi.size() / 3));
+                                            playCard(userId, shunzi, response, redisService, actionResponse, CardType.SANZHANG);
+                                            return;
+                                        }
+                                    } else {
+                                        playCard(userId, shunzi, response, redisService, actionResponse, CardType.FEIJI);
+                                        return;
+                                    }
+                                }
+                            }
+                            si = Card.get_si(cards);
+                            if (si.size() > 0) {
+                                playCard(userId, si.subList(0, 4), response, redisService, actionResponse, CardType.FEIJI);
+                                return;
+                            }
+                            break;
+                        case SIZHANG:
+                            si = Card.get_si(cards);
+                            if (si.size() > 0) {
+                                playCard(userId, si.subList(0, 4), response, redisService, actionResponse, CardType.ZHADAN);
+                                return;
+                            }
+                            break;
+                        case ZHADAN:
+                            si = Card.get_si(cards);
+                            if (si.size() > 0 && (si.get(si.size() - 1) % 100 > value || si.get(si.size() - 1) % 100 == 2)) {
+                                playCard(userId, si.subList(0, 4), response, redisService, actionResponse, CardType.ZHADAN);
+                                return;
+                            }
+                            break;
+                    }
+                }
+
+                if (3 == Card.containSize(seat.getCards(), 14) && count == 3) {
+                    playCard(userId, new ArrayList<>(Arrays.asList(14, 114, 214)), response, redisService, actionResponse, CardType.ZHADAN);
+                    return;
                 }
 
                 historyList.add(new OperationHistory(userId, OperationHistoryType.PASS, null));

@@ -11,17 +11,31 @@ import java.util.List;
  */
 public class Card {
     public static int containSize(List<Integer> cardList, Integer containCard) {
+        return containSize(cardList, containCard, true);
+    }
+
+    public static int containSize(List<Integer> cardList, Integer containCard, boolean sameColor) {
         int size = 0;
         for (Integer card : cardList) {
-            if (card.intValue() == containCard) {
+            if (card.intValue() == containCard || (!sameColor && card % 100 == containCard % 100)) {
                 size++;
             }
         }
         return size;
     }
 
+    public static boolean contain(List<Integer> cardList, Integer containCard) {
+        for (Integer card : cardList) {
+            if (card % 100 == containCard % 100) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static List<Integer> getAllCard() {
-        return new ArrayList<>(Arrays.asList(2, 102, 202, 302,
+        return new ArrayList<>(Arrays.asList(
+                2, 102, 202, 302,
                 3, 103, 203, 303,
                 4, 104, 204, 304,
                 5, 105, 205, 305,
@@ -37,23 +51,9 @@ public class Card {
     }
 
     public static CardType getCardType(List<Integer> cardList, boolean feijizha) {
-        CardType cardType = getCardType(cardList, 1, feijizha);
-        if (0 == CardType.ERROR.compareTo(cardType)) {
-            cardType = getCardType(cardList, 2, feijizha);
-        }
-        return cardType;
-    }
-
-    public static CardType getCardType(List<Integer> cardList, int times, boolean feijizha) {
         List<Integer> cards = new ArrayList<>();
         for (int integer : cardList) {
-            if (1 == times && 2 == integer % 100) {
-                cards.add(15);
-            } else if (2 == times && 14 == integer % 100) {
-                cards.add(1);
-            } else {
-                cards.add(integer % 100);
-            }
+            cards.add(integer % 100);
         }
         cards.sort(new Comparator<Integer>() {
             @Override
@@ -84,15 +84,12 @@ public class Card {
                 if (cards.get(0).intValue() == cards.get(2) || cards.get(1).intValue() == cards.get(3)) {
                     return CardType.SANZHANG;
                 }
-                for (int i = 0; i < 3; i++) {
-                    if (cards.get(i) != cards.get(i + 1) - 1) {
-                        return CardType.ERROR;
-                    }
-                }
-                return CardType.SHUNZI;
+                return CardType.ERROR;
             case 5:
-                if ((cards.get(0).intValue() == cards.get(2) && cards.get(3).intValue() == cards.get(4))
-                        || cards.get(0).intValue() == cards.get(1) && cards.get(2).intValue() == cards.get(4)) {
+                if (cards.get(0).intValue() == cards.get(3) || cards.get(1).intValue() == cards.get(4)) {
+                    return CardType.SIZHANG;
+                }
+                if (cards.get(0).intValue() == cards.get(2) || cards.get(1).intValue() == cards.get(3) || cards.get(2).intValue() == cards.get(4)) {
                     return CardType.SANZHANG;
                 }
                 for (int i = 0; i < 4; i++) {
@@ -110,7 +107,7 @@ public class Card {
                     return CardType.LIANDUI;
                 }
                 if (cards.get(0).intValue() == cards.get(3) || cards.get(1).intValue() == cards.get(4) || cards.get(2).intValue() == cards.get(5)) {
-                    return CardType.SIDAIER;
+                    return CardType.SIZHANG;
                 }
                 for (int i = 0; i < 5; i++) {
                     if (cards.get(i) != cards.get(i + 1) - 1) {
@@ -135,52 +132,90 @@ public class Card {
             //连对
             boolean liandui = true;
             List<Integer> dui = get_dui(cards);
-            if (cards.size() - dui.size() < 2) {
+            if (cards.size() - dui.size() == 0) {
                 for (int i = 0; i < dui.size() - 2; i += 2) {
                     if (dui.get(i).intValue() != dui.get(i + 1) || dui.get(i) != dui.get(i + 2) - 1) {
                         liandui = false;
                         break;
                     }
                 }
+            } else {
+                liandui = false;
             }
             if (liandui) {
                 return CardType.LIANDUI;
             }
 
-            boolean isFeijiZha = true;
-            if (feijizha) {
-                List<Integer> si = get_si(cards);
-                if (cards.size() == si.size()) {
-                    for (int i = 0; i < si.size() - 4; i += 4) {
-                        if (si.get(i) != si.get(i + 4) - 1) {
-                            isFeijiZha = false;
-                        }
-                    }
-                } else {
-                    isFeijiZha = false;
-                }
-            }
-            if (isFeijiZha) {
-                return CardType.ZHADAN;
-            }
+//            boolean isFeijiZha = true;
+//            if (feijizha) {
+//                List<Integer> si = get_si(cards);
+//                if (cards.size() == si.size()) {
+//                    for (int i = 0; i < si.size() - 4; i += 4) {
+//                        if (si.get(i) != si.get(i + 4) - 1) {
+//                            isFeijiZha = false;
+//                        }
+//                    }
+//                } else {
+//                    isFeijiZha = false;
+//                }
+//            }
+//            if (isFeijiZha) {
+//                return CardType.ZHADAN;
+//            }
 
             boolean isFeiji = true;
             //飞机
             List<Integer> san = get_san(cards);
-            if (cards.size() == san.size() || cards.size() - san.size() == 1) {
-                for (int i = 0; i < san.size() - 3; i += 3) {
-                    if (san.get(i) != san.get(i + 3) - 1) {
-                        isFeiji = false;
-                        break;
+            if (4 < san.size()) {
+                if (cards.size() == san.size()) {
+                    for (int i = 0; i < san.size() - 3; i += 3) {
+                        if (san.get(i) != san.get(i + 3) - 1) {
+                            isFeiji = false;
+                            break;
+                        }
                     }
+                } else {
+                    isFeiji = false;
                 }
-            } else {
-                isFeiji = false;
-            }
-            if (isFeiji) {
-                return CardType.FEIJI;
-            }
+                if (isFeiji) {
+                    return CardType.SANLIAN;
+                }
+                isFeiji = true;
+                if (0 == cards.size() % 4) {
+                    if (cards.size() / 4 < san.size() / 3) {
+                        if (san.get(0) != san.get(3) - 1) {
+                            Card.removeAll(san, san.subList(0, 3));
+                        } else {
+                            Card.removeAll(san, san.subList(san.size() - 3, san.size()));
+                        }
+                    } else if (cards.size() / 4 > san.size()) {
+                        isFeiji = false;
+                    }
 
+                    for (int i = 0; i < san.size() - 3; i += 3) {
+                        if (san.get(i) != san.get(i + 3) - 1) {
+                            isFeiji = false;
+                            break;
+                        }
+                    }
+                } else if (0 == cards.size() % 5) {
+                    if (cards.size() / 5 == san.size() / 3) {
+                        for (int i = 0; i < san.size() - 3; i += 3) {
+                            if (san.get(i) != san.get(i + 3) - 1) {
+                                isFeiji = false;
+                                break;
+                            }
+                        }
+                    } else if (cards.size() / 5 > san.size()) {
+                        isFeiji = false;
+                    }
+                } else {
+                    isFeiji = false;
+                }
+                if (isFeiji) {
+                    return CardType.FEIJI;
+                }
+            }
 
         }
         return CardType.ERROR;
@@ -189,16 +224,8 @@ public class Card {
     public static int getCardValue(List<Integer> cardList, CardType cardType) {
         List<Integer> cards = new ArrayList<>();
         for (int integer : cardList) {
-            if (1 != Card.containSize(cardList, 3) &&
-                    1 != Card.containSize(cardList, 103) &&
-                    1 != Card.containSize(cardList, 203) &&
-                    1 != Card.containSize(cardList, 303) && 2 == integer % 100) {
+            if (2 == integer % 100) {
                 cards.add(15);
-            } else if ((1 == Card.containSize(cardList, 3) ||
-                    1 == Card.containSize(cardList, 103) ||
-                    1 == Card.containSize(cardList, 203) ||
-                    1 == Card.containSize(cardList, 303)) && 14 == integer % 100) {
-                cards.add(1);
             } else {
                 cards.add(integer % 100);
             }
@@ -212,66 +239,30 @@ public class Card {
         switch (cardType) {
             case DANPAI:
             case DUIPAI:
-                return cards.get(0);
             case LIANDUI:
-                if (2 == Card.containSize(cardList, 3) && 2 == Card.containSize(cardList, 15)) {
-                    if (2 == Card.containSize(cardList, 14)) {
-                        return 1;
-                    } else {
-                        return 2;
-                    }
-                }
-                return cards.get(1);
             case SHUNZI:
             case ZHADAN:
-                if (cards.contains(3) && cards.contains(15)) {
-                    if (cards.contains(14)) {
-                        return 1;
-                    } else {
-                        return 2;
-                    }
-                }
-                return cards.get(0);
+                return cards.get(0) % 100;
             case SANZHANG:
-                int val = cards.get(2);
-                if (val == 1) {
-                    val = 14;
-                } else if (val == 2) {
-                    val = 15;
-                }
-                return val;
+            case SIZHANG:
+                return cards.get(2) % 100;
             case FEIJI:
-                if (3 == Card.containSize(cardList, 3) && 3 == Card.containSize(cardList, 15)) {
-                    if (3 == Card.containSize(cardList, 14)) {
-                        return 1;
-                    } else {
-                        return 2;
-                    }
-                }
                 for (Integer integer : cardList) {
-                    if (3 == Card.containSize(cardList, integer)) {
-                        return integer;
+                    if (3 <= Card.containSize(cardList, integer, false) && 3 <= Card.containSize(cardList, integer + 1, false)) {
+                        return integer % 100;
                     }
                 }
-            case SIDAIER:
-                val = cards.get(3);
-                if (val == 1) {
-                    val = 14;
-                } else if (val == 2) {
-                    val = 15;
-                }
-                return val;
         }
         return 0;
     }
 
-    private static List<Integer> get_dui(List<Integer> cards) {
+    public static List<Integer> get_dui(List<Integer> cards) {
         List<Integer> dui_arr = new ArrayList<>();
         if (cards.size() >= 2) {
             for (int i = 0; i < cards.size() - 1; i++) {
-                if (cards.get(i).intValue() == cards.get(i + 1).intValue()) {
+                if (cards.get(i) % 100 == cards.get(i + 1) % 100) {
                     dui_arr.add(cards.get(i));
-                    dui_arr.add(cards.get(i));
+                    dui_arr.add(cards.get(i + 1));
                     i++;
                 }
             }
@@ -279,14 +270,14 @@ public class Card {
         return dui_arr;
     }
 
-    private static List<Integer> get_san(List<Integer> cards) {
+    public static List<Integer> get_san(List<Integer> cards) {
         List<Integer> san_arr = new ArrayList<>();
         if (cards.size() >= 3) {
             for (int i = 0; i < cards.size() - 2; i++) {
-                if (cards.get(i).intValue() == cards.get(i + 2).intValue()) {
+                if (cards.get(i) % 100 == cards.get(i + 2) % 100) {
                     san_arr.add(cards.get(i));
-                    san_arr.add(cards.get(i));
-                    san_arr.add(cards.get(i));
+                    san_arr.add(cards.get(i + 1));
+                    san_arr.add(cards.get(i + 2));
                     i += 2;
                 }
             }
@@ -294,19 +285,39 @@ public class Card {
         return san_arr;
     }
 
-    private static List<Integer> get_si(List<Integer> cards) {
+    public static List<Integer> get_si(List<Integer> cards) {
         List<Integer> san_arr = new ArrayList<>();
         if (cards.size() >= 4) {
             for (int i = 0; i < cards.size() - 3; i++) {
-                if (cards.get(i).intValue() == cards.get(i + 3).intValue()) {
+                if (cards.get(i) % 100 == cards.get(i + 3) % 100) {
                     san_arr.add(cards.get(i));
-                    san_arr.add(cards.get(i));
-                    san_arr.add(cards.get(i));
-                    san_arr.add(cards.get(i));
+                    san_arr.add(cards.get(i + 1));
+                    san_arr.add(cards.get(i + 2));
+                    san_arr.add(cards.get(i + 3));
                     i += 3;
                 }
             }
         }
         return san_arr;
+    }
+
+    public static void remove(List<Integer> cards, Integer card) {
+        for (Integer card1 : cards) {
+            if (card1.intValue() == card) {
+                cards.remove(card1);
+                return;
+            }
+        }
+    }
+
+    public static void removeAll(List<Integer> cards, List<Integer> removes) {
+        for (Integer card : removes) {
+            for (Integer card1 : cards) {
+                if (card1.intValue() == card) {
+                    cards.remove(card1);
+                    break;
+                }
+            }
+        }
     }
 }

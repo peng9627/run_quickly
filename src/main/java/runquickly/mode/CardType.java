@@ -11,10 +11,11 @@ public enum CardType {
     LIANDUI("连对", 3),
     SHUNZI("顺子", 4),
     SANZHANG("三张", 5),
-    FEIJI("飞机", 6),
-    ZHADAN("炸弹", 7),
-    SIDAIER("四带2", 8),
-    ERROR("错误", 9);
+    SANLIAN("三连", 6),
+    FEIJI("飞机", 7),
+    ZHADAN("炸弹", 8),
+    SIZHANG("四张", 9),
+    ERROR("错误", 10);
 
     private String name;
     private Integer values;

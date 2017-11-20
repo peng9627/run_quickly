@@ -75,6 +75,9 @@ public class RunQuicklyClient {
         for (Seat seat1 : room.getSeats()) {
             RunQuickly.RunQuicklySeatGameInfo.Builder seatResponse = RunQuickly.RunQuicklySeatGameInfo.newBuilder();
             seatResponse.setID(seat1.getUserId());
+            if (null != room.getCardType()) {
+                gameInfo.setCardType(room.getCardType().ordinal());
+            }
             if (null != seat1.getCards()) {
                 if (seat1.getUserId() == userId) {
                     seatResponse.addAllCards(seat1.getCards());
@@ -401,7 +404,7 @@ public class RunQuicklyClient {
                             case PLAY_CARD:
                                 RunQuickly.RunQuicklyPlayCard playCardRequest = RunQuickly.RunQuicklyPlayCard.parseFrom(actionRequest.getData());
                                 List<Integer> cards = playCardRequest.getCardList();
-                                room.playCard(userId, cards, response, redisService, actionResponse);
+                                room.playCard(userId, cards, response, redisService, actionResponse, CardType.values()[playCardRequest.getCardType()]);
                                 break;
                             case PASS:
                                 room.pass(userId, actionResponse, response, redisService);
