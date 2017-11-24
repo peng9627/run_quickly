@@ -826,7 +826,7 @@ public class Room {
                 redisService.unlock("lock_match_info" + matchNo);
             }
         } else {
-            if (0 == gameStatus.compareTo(GameStatus.WAITING)) {
+            if (0 == gameStatus.compareTo(GameStatus.WAITING) && !aa) {
                 jsonObject.put("flowType", 1);
                 switch (gameTimes) {
                     case 4:
