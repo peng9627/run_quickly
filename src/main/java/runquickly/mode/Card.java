@@ -189,16 +189,8 @@ public class Card {
     public static int getCardValue(List<Integer> cardList, CardType cardType) {
         List<Integer> cards = new ArrayList<>();
         for (int integer : cardList) {
-            if (1 != Card.containSize(cardList, 3) &&
-                    1 != Card.containSize(cardList, 103) &&
-                    1 != Card.containSize(cardList, 203) &&
-                    1 != Card.containSize(cardList, 303) && 2 == integer % 100) {
+            if (2 == integer % 100) {
                 cards.add(15);
-            } else if ((1 == Card.containSize(cardList, 3) ||
-                    1 == Card.containSize(cardList, 103) ||
-                    1 == Card.containSize(cardList, 203) ||
-                    1 == Card.containSize(cardList, 303)) && 14 == integer % 100) {
-                cards.add(1);
             } else {
                 cards.add(integer % 100);
             }
@@ -214,8 +206,8 @@ public class Card {
             case DUIPAI:
                 return cards.get(0);
             case LIANDUI:
-                if (2 == Card.containSize(cardList, 3) && 2 == Card.containSize(cardList, 15)) {
-                    if (2 == Card.containSize(cardList, 14)) {
+                if (2 == Card.containSize(cards, 3) && 2 == Card.containSize(cards, 15)) {
+                    if (2 == Card.containSize(cards, 14)) {
                         return 1;
                     } else {
                         return 2;
@@ -241,15 +233,15 @@ public class Card {
                 }
                 return val;
             case FEIJI:
-                if (3 == Card.containSize(cardList, 3) && 3 == Card.containSize(cardList, 15)) {
-                    if (3 == Card.containSize(cardList, 14)) {
+                if (3 == Card.containSize(cards, 3) && 3 == Card.containSize(cards, 15)) {
+                    if (3 == Card.containSize(cards, 14)) {
                         return 1;
                     } else {
                         return 2;
                     }
                 }
-                for (Integer integer : cardList) {
-                    if (3 == Card.containSize(cardList, integer)) {
+                for (Integer integer : cards) {
+                    if (3 == Card.containSize(cards, integer)) {
                         return integer;
                     }
                 }
