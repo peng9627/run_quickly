@@ -124,8 +124,10 @@ public class Card {
             boolean shunzi = true;
             for (int i = 0; i < 5; i++) {
                 if (cards.get(i) != cards.get(i + 1) - 1) {
-                    shunzi = false;
-                    break;
+                    if (cards.get(i + 1) % 100 != 14 || cards.get(0) % 100 != 3) {
+                        shunzi = false;
+                        break;
+                    }
                 }
             }
             if (shunzi) {
@@ -142,6 +144,8 @@ public class Card {
                         break;
                     }
                 }
+            } else {
+                liandui = false;
             }
             if (liandui) {
                 return CardType.LIANDUI;
