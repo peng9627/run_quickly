@@ -254,11 +254,13 @@ public class Room {
 
         int multiple = 1;
         for (Seat seat : seats) {
-            if (seat.getCards().size() == 0 || (1 == Card.containSize(seat.getCards(), 2)
-                    && 1 == Card.containSize(seat.getCards(), 102)
-                    && 1 == Card.containSize(seat.getCards(), 202)
-                    && 1 == Card.containSize(seat.getCards(), 302)
-                    && 1 == (gameRules >> 2) % 2)) {
+            if (seat.getCards().size() == 0
+//                    || (1 == Card.containSize(seat.getCards(), 2)
+//                    && 1 == Card.containSize(seat.getCards(), 102)
+//                    && 1 == Card.containSize(seat.getCards(), 202)
+//                    && 1 == Card.containSize(seat.getCards(), 302)
+//                    && 1 == (gameRules >> 2) % 2)
+                    ) {
                 multiple = seat.getMultiple();
                 break;
             }
@@ -283,53 +285,39 @@ public class Room {
             OperationHistory operationHistory = historyList.get(historyList.size() - 1);
             if (operationHistory.getCards().size() == 1 && historyList.size() > 1) {
                 OperationHistory operationHistory1 = historyList.get(historyList.size() - 2);
+                lastUser = operationHistory1.getUserId();
                 int playedCard = 0;
                 if (0 != operationHistory1.getHistoryType().compareTo(OperationHistoryType.PASS)) {
                     playedCard = operationHistory1.getCards().get(0);
-                }
-                lastUser = operationHistory1.getUserId();
-                int lastCard;
-                for (int i = historyList.size() - 3; i > historyList.size() - count - 2 && i > -1; i--) {
-                    OperationHistory operationHistory2 = historyList.get(i);
-                    if (0 == OperationHistoryType.PLAY_CARD.compareTo(operationHistory2.getHistoryType())) {
-                        if (1 == operationHistory2.getCards().size()) {
-                            lastCard = operationHistory2.getCards().get(0);
-                            for (Seat seat : seats) {
-                                if (seat.getUserId() == lastUser) {
-                                    List<Integer> tempCards = new ArrayList<>();
-                                    tempCards.addAll(seat.getCards());
-                                    tempCards.sort(new Comparator<Integer>() {
-                                        @Override
-                                        public int compare(Integer o1, Integer o2) {
-                                            if (o1 % 100 == 2) {
-                                                o1 = 15;
-                                            }
-                                            if (o2 % 100 == 2) {
-                                                o2 = 15;
-                                            }
-                                            return o1 % 100 > o2 % 100 ? 1 : -1;
-                                        }
-                                    });
-                                    int value = tempCards.get(tempCards.size() - 1) % 100;
-                                    if (2 == value) {
-                                        value = 15;
+                    for (Seat seat : seats) {
+                        if (seat.getUserId() == lastUser) {
+                            List<Integer> tempCards = new ArrayList<>();
+                            tempCards.addAll(seat.getCards());
+                            tempCards.sort(new Comparator<Integer>() {
+                                @Override
+                                public int compare(Integer o1, Integer o2) {
+                                    if (o1 % 100 == 2) {
+                                        o1 = 15;
                                     }
-                                    int playedCardValue = playedCard % 100;
-                                    if (2 == playedCardValue) {
-                                        playedCardValue = 15;
+                                    if (o2 % 100 == 2) {
+                                        o2 = 15;
                                     }
-                                    int lastCardValue = lastCard % 100;
-                                    if (2 == lastCardValue) {
-                                        lastCardValue = 15;
-                                    }
-                                    if (value > playedCardValue && value > lastCardValue % 100) {
-                                        onlyLose = true;
-                                    }
-                                    break;
+                                    return o1 % 100 > o2 % 100 ? 1 : -1;
                                 }
+                            });
+                            int value = tempCards.get(tempCards.size() - 1) % 100;
+                            if (2 == value) {
+                                value = 15;
                             }
+                            int playedCardValue = playedCard % 100;
+                            if (2 == playedCardValue) {
+                                playedCardValue = 15;
+                            }
+                            if (value > playedCardValue) {
+                                onlyLose = true;
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
             }
@@ -337,11 +325,13 @@ public class Room {
 
         if (!onlyLose) {
             for (Seat seat : seats) {
-                if (seat.getCards().size() > 0 && !(1 == Card.containSize(seat.getCards(), 2)
-                        && 1 == Card.containSize(seat.getCards(), 102)
-                        && 1 == Card.containSize(seat.getCards(), 202)
-                        && 1 == Card.containSize(seat.getCards(), 302)
-                        && 1 == (gameRules >> 2) % 2)) {
+                if (seat.getCards().size() > 0
+//                        && !(1 == Card.containSize(seat.getCards(), 2)
+//                        && 1 == Card.containSize(seat.getCards(), 102)
+//                        && 1 == Card.containSize(seat.getCards(), 202)
+//                        && 1 == Card.containSize(seat.getCards(), 302)
+//                        && 1 == (gameRules >> 2) % 2)
+                        ) {
                     int score = 0;
                     int cardSize = seat.getCards().size();
                     int maxCardSize = count == 3 ? 16 : 13;
@@ -376,48 +366,62 @@ public class Room {
                     winSeat = seat;
                 }
             }
+            if (null == winSeat) {
+                return;
+            }
+            winSeat.setScore(winSeat.getScore() + winScore);
+            winSeat.setWinCount(winSeat.getWinCount() + 1);
+            RunQuickly.RunQuicklyResult result = RunQuickly.RunQuicklyResult.newBuilder().setID(winSeat.getUserId())
+                    .setCurrentScore(winScore).setTotalScore(winSeat.getScore()).build();
+            resultResponse.addResult(result);
+
+            SeatRecord seatRecord = new SeatRecord();
+            seatRecord.setNickname(winSeat.getNickname());
+            seatRecord.setHead(winSeat.getHead());
+            seatRecord.setUserId(winSeat.getUserId());
+            seatRecord.getInitialCards().addAll(winSeat.getInitialCards());
+            seatRecord.getCards().addAll(winSeat.getCards());
+            seatRecord.setWinOrLose(winScore);
+            seatRecord.setMultiple(winSeat.getMultiple());
+            seatRecord.setScore(winSeat.getScore());
+            seatRecords.add(seatRecord);
         } else {
             for (Seat seat : seats) {
-                if (seat.getCards().size() > 0) {
-                    int score = 0;
-                    int cardSize = seat.getCards().size();
-                    int maxCardSize = count == 3 ? 16 : 13;
-                    if (cardSize == maxCardSize) {
-                        score = cardSize * 2;//关
-                    } else if (0 < historyList.size() && seat.getUserId() == historyList.get(0).getUserId() && cardSize + historyList.get(0).getCards().size() == maxCardSize) {
-                        score = cardSize * 2;//反关
-                    } else {
-                        score = cardSize;
-                    }
-                    score *= multiple;
-                    winScore += score;
 
-                    if (seat.getUserId() != lastUser) {
-                        RunQuickly.RunQuicklyResult result = RunQuickly.RunQuicklyResult.newBuilder().setID(seat.getUserId())
-                                .addAllCards(seat.getCards()).setTotalScore(seat.getScore()).build();
-                        resultResponse.addResult(result);
+//                int score = 0;
+//                int cardSize = seat.getCards().size();
+//                int maxCardSize = count == 3 ? 16 : 13;
+//                if (cardSize == maxCardSize) {
+//                    score = cardSize * 2;//关
+//                } else if (0 < historyList.size() && seat.getUserId() == historyList.get(0).getUserId() && cardSize + historyList.get(0).getCards().size() == maxCardSize) {
+//                    score = cardSize * 2;//反关
+//                } else {
+//                    score = cardSize;
+//                }
+//                score *= multiple;
+//                score = 16;
+//                winScore += 16;
 
-                        SeatRecord seatRecord = new SeatRecord();
-                        seatRecord.setNickname(seat.getNickname());
-                        seatRecord.setHead(seat.getHead());
-                        seatRecord.setUserId(seat.getUserId());
-                        seatRecord.getInitialCards().addAll(seat.getInitialCards());
-                        seatRecord.getCards().addAll(seat.getCards());
-                        seatRecord.setWinOrLose(0);
-                        seatRecord.setMultiple(seat.getMultiple());
-                        seatRecords.add(seatRecord);
-                        seatRecord.setScore(seat.getScore());
-
-                    }
-                } else {
-                    winSeat = seat;
-                }
-            }
-            for (Seat seat : seats) {
-                if (seat.getUserId() == lastUser) {
-                    seat.setScore(seat.getScore() - winScore);
+                if (seat.getUserId() != lastUser) {
+                    seat.setScore(seat.getScore() + 16);
                     RunQuickly.RunQuicklyResult result = RunQuickly.RunQuicklyResult.newBuilder().setID(seat.getUserId())
-                            .addAllCards(seat.getCards()).setCurrentScore(-winScore).setTotalScore(seat.getScore()).build();
+                            .addAllCards(seat.getCards()).setCurrentScore(16).setTotalScore(seat.getScore()).build();
+                    resultResponse.addResult(result);
+
+                    SeatRecord seatRecord = new SeatRecord();
+                    seatRecord.setNickname(seat.getNickname());
+                    seatRecord.setHead(seat.getHead());
+                    seatRecord.setUserId(seat.getUserId());
+                    seatRecord.getInitialCards().addAll(seat.getInitialCards());
+                    seatRecord.getCards().addAll(seat.getCards());
+                    seatRecord.setWinOrLose(0);
+                    seatRecord.setMultiple(seat.getMultiple());
+                    seatRecords.add(seatRecord);
+                    seatRecord.setScore(seat.getScore());
+                } else {
+                    seat.setScore(seat.getScore() - (16 * (seats.size() - 1)));
+                    RunQuickly.RunQuicklyResult result = RunQuickly.RunQuicklyResult.newBuilder().setID(seat.getUserId())
+                            .addAllCards(seat.getCards()).setCurrentScore(-(16 * (seats.size() - 1))).setTotalScore(seat.getScore()).build();
                     resultResponse.addResult(result);
 
                     SeatRecord seatRecord = new SeatRecord();
@@ -430,30 +434,9 @@ public class Room {
                     seatRecord.setMultiple(seat.getMultiple());
                     seatRecords.add(seatRecord);
                     seatRecord.setScore(seat.getScore());
-                    break;
                 }
             }
         }
-
-        if (null == winSeat) {
-            return;
-        }
-        winSeat.setScore(winSeat.getScore() + winScore);
-        winSeat.setWinCount(winSeat.getWinCount() + 1);
-        RunQuickly.RunQuicklyResult result = RunQuickly.RunQuicklyResult.newBuilder().setID(winSeat.getUserId())
-                .setCurrentScore(winScore).setTotalScore(winSeat.getScore()).build();
-        resultResponse.addResult(result);
-
-        SeatRecord seatRecord = new SeatRecord();
-        seatRecord.setNickname(winSeat.getNickname());
-        seatRecord.setHead(winSeat.getHead());
-        seatRecord.setUserId(winSeat.getUserId());
-        seatRecord.getInitialCards().addAll(winSeat.getInitialCards());
-        seatRecord.getCards().addAll(winSeat.getCards());
-        seatRecord.setWinOrLose(winScore);
-        seatRecord.setMultiple(winSeat.getMultiple());
-        seatRecord.setScore(winSeat.getScore());
-        seatRecords.add(seatRecord);
 
         record.getSeatRecordList().addAll(seatRecords);
         recordList.add(record);
@@ -987,16 +970,16 @@ public class Room {
             RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.build(), seat.getUserId());
         });
 
-        for (Seat seat : seats) {
-            if (1 == Card.containSize(seat.getCards(), 2)
-                    && 1 == Card.containSize(seat.getCards(), 102)
-                    && 1 == Card.containSize(seat.getCards(), 202)
-                    && 1 == Card.containSize(seat.getCards(), 302)
-                    && 1 == (gameRules >> 2) % 2) {
-                gameOver(response, redisService);
-                return;
-            }
-        }
+//        for (Seat seat : seats) {
+//            if (1 == Card.containSize(seat.getCards(), 2)
+//                    && 1 == Card.containSize(seat.getCards(), 102)
+//                    && 1 == Card.containSize(seat.getCards(), 202)
+//                    && 1 == Card.containSize(seat.getCards(), 302)
+//                    && 1 == (gameRules >> 2) % 2) {
+//                gameOver(response, redisService);
+//                return;
+//            }
+//        }
         for (Seat seat : seats) {
             if (seat.getSeatNo() == operationSeat) {
                 if (redisService.exists("room_match" + roomNo)) {
@@ -1086,6 +1069,9 @@ public class Room {
                             return;
                         } else {
                             CardType myCardType = Card.getCardType(cardList, 1 == (gameRules >> 1) % 2);
+                            if (3 == Card.containSize(cardList, 14, false) && 3 == count && cardList.size() == 3) {
+                                myCardType = CardType.ZHADAN;
+                            }
                             if (0 == myCardType.compareTo(CardType.ERROR)) {
                                 System.out.println("牌型错误");
 //                                pass(userId, actionResponse, response, redisService);
@@ -1094,7 +1080,7 @@ public class Room {
                                 playCard(userId, cardList, response, redisService, actionResponse, CardType.DANPAI);
                                 return;
                             }
-                            cardType = myCardType;
+                            cardType = playCardType;
                             if (myCardType == CardType.ZHADAN) {
                                 seat.setMultiple(seat.getMultiple() * 2);
                             }
@@ -1453,7 +1439,7 @@ public class Room {
                             } else if (0 == cardSize % 5) {
                                 size = cardSize / 5;
                             }
-                            for (int i = 0; i <= san.size() - 3 * size; i += 3) {
+                            for (int i = 0; i <= san.size() - (3 * size) - 1; i += 3) {
                                 boolean contain = true;
                                 shunzi.clear();
                                 shunzi.add(san.get(i));
@@ -1479,18 +1465,18 @@ public class Room {
                                         Card.removeAll(tempCards, shunzi);
                                         if ((0 == cardSize % 4 && tempCards.size() >= shunzi.size() / 3) || (0 == cardSize % 5 && tempCards.size() >= 2 * shunzi.size() / 3)) {
                                             shunzi.addAll(tempCards.subList(0, 0 == cardSize % 4 ? shunzi.size() / 3 : 2 * shunzi.size() / 3));
-                                            playCard(userId, shunzi, response, redisService, actionResponse, CardType.SANZHANG);
+                                            playCard(userId, shunzi, response, redisService, actionResponse, CardType.FEIJI);
                                             return;
                                         }
                                     } else {
-                                        playCard(userId, shunzi, response, redisService, actionResponse, CardType.FEIJI);
+                                        playCard(userId, shunzi, response, redisService, actionResponse, CardType.SANLIAN);
                                         return;
                                     }
                                 }
                             }
                             si = Card.get_si(cards);
                             if (si.size() > 0) {
-                                playCard(userId, si.subList(0, 4), response, redisService, actionResponse, CardType.FEIJI);
+                                playCard(userId, si.subList(0, 4), response, redisService, actionResponse, CardType.ZHADAN);
                                 return;
                             }
                             break;

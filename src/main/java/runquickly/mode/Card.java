@@ -100,7 +100,7 @@ public class Card {
                 return CardType.SHUNZI;
             case 6:
                 if (cards.get(0).intValue() == cards.get(2) && cards.get(3).intValue() == cards.get(5) && cards.get(0) == cards.get(3) - 1) {
-                    return CardType.FEIJI;
+                    return CardType.SANLIAN;
                 }
                 if (cards.get(0).intValue() == cards.get(1) && cards.get(0) == cards.get(2) - 1 && cards.get(0) == cards.get(3) - 1
                         && cards.get(0) == cards.get(4) - 2 && cards.get(0) == cards.get(5) - 2) {
@@ -242,6 +242,7 @@ public class Card {
             case LIANDUI:
             case SHUNZI:
             case ZHADAN:
+            case SANLIAN:
                 return cards.get(0) % 100;
             case SANZHANG:
             case SIZHANG:
