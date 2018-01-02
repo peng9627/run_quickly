@@ -248,8 +248,8 @@ public class Card {
             case SIZHANG:
                 return cards.get(2) % 100;
             case FEIJI:
-                for (Integer integer : cardList) {
-                    if (3 <= Card.containSize(cardList, integer, false) && 3 <= Card.containSize(cardList, integer + 1, false)) {
+                for (Integer integer : cards) {
+                    if (3 <= Card.containSize(cards, integer, false) && 3 <= Card.containSize(cards, integer + 1, false)) {
                         return integer % 100;
                     }
                 }

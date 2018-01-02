@@ -290,7 +290,7 @@ public class Room {
                 if (0 != operationHistory1.getHistoryType().compareTo(OperationHistoryType.PASS)) {
                     playedCard = operationHistory1.getCards().get(0);
                     for (Seat seat : seats) {
-                        if (seat.getUserId() == lastUser) {
+                        if (seat.getUserId() == lastUser && seat.isCanPlay()) {
                             List<Integer> tempCards = new ArrayList<>();
                             tempCards.addAll(seat.getCards());
                             tempCards.sort(new Comparator<Integer>() {
