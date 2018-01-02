@@ -267,7 +267,7 @@ public class Room {
                         if (1 == operationHistory2.getCards().size()) {
                             lastCard = operationHistory2.getCards().get(0);
                             for (Seat seat : seats) {
-                                if (seat.getUserId() == lastUser) {
+                                if (seat.getUserId() == lastUser && seat.isCanPlay()) {
                                     List<Integer> tempCards = new ArrayList<>();
                                     tempCards.addAll(seat.getCards());
                                     tempCards.sort(new Comparator<Integer>() {
