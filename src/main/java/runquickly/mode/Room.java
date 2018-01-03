@@ -1027,7 +1027,7 @@ public class Room {
 
                     //如果没出牌
                     if (null == cardType) {
-                        if (0 != seat.getCards().size()) {
+                        if (1 != seat.getCards().size()) {
                             for (Seat seat1 : seats) {
                                 seat1.setCanPlay(true);
                             }
@@ -1093,7 +1093,13 @@ public class Room {
                             }
                         } else {
                             if (1 == gameRules % 2) {
-                                seat.setCanPlay(false);
+                                for (Seat seat1 : seats) {
+                                    if (seat1.getSeatNo() == getNextSeat()) {
+                                        if (1 != seat1.getCards().size()) {
+                                            seat.setCanPlay(false);
+                                        }
+                                    }
+                                }
                             }
                             historyList.add(new OperationHistory(userId, OperationHistoryType.PASS, null));
                             lastOperation = seat.getUserId();
@@ -1176,9 +1182,13 @@ public class Room {
         for (Seat seat : seats) {
             if (seat.getUserId() == userId && operationSeat == seat.getSeatNo()) {
                 if (1 == gameRules % 2) {
-
-
-                    seat.setCanPlay(false);
+                    for (Seat seat1 : seats) {
+                        if (seat1.getSeatNo() == getNextSeat()) {
+                            if (1 != seat1.getCards().size()) {
+                                seat.setCanPlay(false);
+                            }
+                        }
+                    }
                 }
                 boolean canPass = false;
                 if (historyList.size() > 0) {
