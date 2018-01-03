@@ -1027,8 +1027,10 @@ public class Room {
 
                     //如果没出牌
                     if (null == cardType) {
-                        for (Seat seat1 : seats) {
-                            seat1.setCanPlay(true);
+                        if (0 != seat.getCards().size()) {
+                            for (Seat seat1 : seats) {
+                                seat1.setCanPlay(true);
+                            }
                         }
                         if (0 == cardList.size()) {
                             System.out.println("必须出牌");
