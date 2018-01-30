@@ -261,6 +261,7 @@ public class Room {
                 }
                 lastUser = operationHistory1.getUserId();
                 int lastCard;
+                boolean allPass = true;
                 for (int i = historyList.size() - 3; i > historyList.size() - count - 2 && i > -1; i--) {
                     OperationHistory operationHistory2 = historyList.get(i);
                     if (0 == OperationHistoryType.PLAY_CARD.compareTo(operationHistory2.getHistoryType())) {
@@ -301,7 +302,40 @@ public class Room {
                                 }
                             }
                         }
+                        allPass = false;
                         break;
+                    }
+                }
+                if (allPass) {
+                    for (Seat seat : seats) {
+                        if (seat.getUserId() == lastUser && seat.isCanPlay()) {
+                            List<Integer> tempCards = new ArrayList<>();
+                            tempCards.addAll(seat.getCards());
+                            tempCards.sort(new Comparator<Integer>() {
+                                @Override
+                                public int compare(Integer o1, Integer o2) {
+                                    if (o1 % 100 == 2) {
+                                        o1 = 15;
+                                    }
+                                    if (o2 % 100 == 2) {
+                                        o2 = 15;
+                                    }
+                                    return o1 % 100 > o2 % 100 ? 1 : -1;
+                                }
+                            });
+                            int value = tempCards.get(tempCards.size() - 1) % 100;
+                            if (2 == value) {
+                                value = 15;
+                            }
+                            int playedCardValue = playedCard % 100;
+                            if (2 == playedCardValue) {
+                                playedCardValue = 15;
+                            }
+                            if (value > playedCardValue) {
+                                onlyLose = true;
+                            }
+                            break;
+                        }
                     }
                 }
             }
@@ -455,6 +489,12 @@ public class Room {
             response.setOperationType(GameBase.OperationType.RESULT).setData(resultResponse.build().toByteString());
             seats.stream().filter(seat -> RunQuicklyTcpService.userClients.containsKey(seat.getUserId()))
                     .forEach(seat -> RunQuicklyTcpService.userClients.get(seat.getUserId()).send(response.build(), seat.getUserId()));
+        }
+        for (Seat seat : seats) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("userId", seat.getUserId());
+            jsonObject.put("create", false);
+            HttpUtil.urlConnectionByRsa(Constant.apiUrl + Constant.addCountUrl, jsonObject.toJSONString());
         }
         clear();
 
@@ -792,7 +832,7 @@ public class Room {
                         jsonObject.put("money", 2);
                         break;
                     case 16:
-                        jsonObject.put("money", 3);
+                        jsonObject.put("money", 4);
                         break;
                 }
                 jsonObject.put("description", "开房间退回" + roomNo);

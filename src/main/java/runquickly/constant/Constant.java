@@ -17,6 +17,7 @@ public class Constant {
     public static String userListUrl;
     public static String gamerecordCreateUrl;
     public static String moneyDetailedCreate;
+    public static String addCountUrl;
 
     public static int readyTimeout;
     public static int playCardTimeout;
@@ -36,6 +37,7 @@ public class Constant {
             userListUrl = prop.getProperty("userListUrl");
             gamerecordCreateUrl = prop.getProperty("gamerecordCreateUrl");
             moneyDetailedCreate = prop.getProperty("moneyDetailedCreate");
+            addCountUrl = prop.getProperty("addCountUrl");
             readyTimeout = Integer.parseInt(prop.getProperty("readyTimeout"));
             playCardTimeout = Integer.parseInt(prop.getProperty("playCardTimeout"));
             dissolve = Integer.parseInt(prop.getProperty("dissolve"));
