@@ -123,11 +123,12 @@ public class RunQuicklyClient {
                     }
                     GameBase.RoomCardIntoRequest intoRequest = GameBase.RoomCardIntoRequest.parseFrom(request.getData());
                     userId = intoRequest.getID();
-
+                    logger.info("连接进入");
                     messageReceive.roomNo = intoRequest.getRoomNo();
                     if (RunQuicklyTcpService.userClients.containsKey(userId) && RunQuicklyTcpService.userClients.get(userId) != messageReceive) {
                         RunQuicklyTcpService.userClients.get(userId).close();
                     }
+                    logger.info("连接进入1");
                     synchronized (this) {
                         try {
                             wait(10);
@@ -135,14 +136,14 @@ public class RunQuicklyClient {
                             logger.error(e.toString(), e);
                         }
                     }
+
                     RunQuicklyTcpService.userClients.put(userId, messageReceive);
                     GameBase.RoomCardIntoResponse.Builder roomCardIntoResponseBuilder = GameBase.RoomCardIntoResponse.newBuilder();
                     roomCardIntoResponseBuilder.setGameType(GameBase.GameType.RUN_QUICKLY).setRoomNo(messageReceive.roomNo);
                     if (redisService.exists("room" + messageReceive.roomNo)) {
                         while (!redisService.lock("lock_room" + messageReceive.roomNo)) {
                         }
-                        redisService.addCache("reconnect" + userId, "run_quickly," + messageReceive.roomNo);
-
+                        logger.info("连接进入存在房间");
                         Room room = JSON.parseObject(redisService.getCache("room" + messageReceive.roomNo), Room.class);
                         room.setRoomOwner(room.getRoomOwner());
                         roomCardIntoResponseBuilder.setStarted(0 != room.getGameStatus().compareTo(GameStatus.READYING) && 0 != room.getGameStatus().compareTo(GameStatus.WAITING));
@@ -176,6 +177,7 @@ public class RunQuicklyClient {
                             }
                         }
 
+                        redisService.addCache("reconnect" + userId, "run_quickly," + messageReceive.roomNo);
                         room.sendRoomInfo(roomCardIntoResponseBuilder, response, userId);
                         room.sendSeatInfo(response);
 
@@ -640,6 +642,8 @@ public class RunQuicklyClient {
                     break;
             }
         } catch (InvalidProtocolBufferException e) {
+            logger.error(e.toString(), e);
+        } catch (Exception e) {
             logger.error(e.toString(), e);
         }
     }

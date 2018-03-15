@@ -163,6 +163,8 @@ public class Card {
                 } else {
                     isFeijiZha = false;
                 }
+            } else {
+                isFeijiZha = false;
             }
             if (isFeijiZha) {
                 return CardType.ZHADAN;

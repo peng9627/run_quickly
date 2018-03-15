@@ -53,24 +53,29 @@ public class MessageReceive implements Runnable {
     }
 
     public void send(GameBase.BaseConnection baseConnection, int userId) {
-        try {
-            logger.info("runquickly send " + baseConnection.getOperationType() + userId);
-            String md5 = CoreStringUtils.md5(ByteUtils.addAll(md5Key, baseConnection.toByteArray()), 32, false);
-            if (0 == userId) {
-                sendTo(os, md5, baseConnection);
-            }
-            if (RunQuicklyTcpService.userClients.containsKey(userId)) {
-                synchronized (RunQuicklyTcpService.userClients.get(userId).os) {
-                    OutputStream os = RunQuicklyTcpService.userClients.get(userId).os;
-                    sendTo(os, md5, baseConnection);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    logger.info("runquickly send " + baseConnection.getOperationType() + userId);
+                    String md5 = CoreStringUtils.md5(ByteUtils.addAll(md5Key, baseConnection.toByteArray()), 32, false);
+                    if (0 == userId) {
+                        sendTo(os, md5, baseConnection);
+                    }
+                    if (RunQuicklyTcpService.userClients.containsKey(userId)) {
+                        synchronized (RunQuicklyTcpService.userClients.get(userId).os) {
+                            OutputStream os = RunQuicklyTcpService.userClients.get(userId).os;
+                            sendTo(os, md5, baseConnection);
+                        }
+                    }
+                } catch (IOException e) {
+                    logger.info("socket.server.sendMessage.fail.message" + e.getMessage());
+//            client.close();
+                } catch (Exception e) {
+                    logger.error(e.toString(), e);
                 }
             }
-        } catch (IOException e) {
-            logger.info("socket.server.sendMessage.fail.message" + e.getMessage());
-//            client.close();
-        } catch (Exception e) {
-            logger.error(e.toString(), e);
-        }
+        }).start();
     }
 
     public void close() {

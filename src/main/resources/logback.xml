@@ -11,6 +11,7 @@
         <file>logs/runquickly/info.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <FileNamePattern>logs/runquickly/info-%d{yyyy-MM-dd_HH}.log</FileNamePattern>
+            <MaxHistory>120</MaxHistory>
         </rollingPolicy>
         <encoder>
             <pattern>%date [%thread] %-5level %msg - %logger{80}%n%ex</pattern>
@@ -20,14 +21,10 @@
     <!-- 时间滚动输出 level为 ERROR 日志 -->
     <appender name="file—error"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>ERROR</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
-        </filter>
+        <file>logs/runquickly/error.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <FileNamePattern>logs/runquickly/error.%d{yyyy-MM-dd_HH}.log</FileNamePattern>
-            <MaxHistory>30</MaxHistory>
+            <MaxHistory>240</MaxHistory>
         </rollingPolicy>
         <encoder>
             <pattern>%date [%thread] %-5level %logger{80} - %msg%n%ex</pattern>
@@ -37,14 +34,10 @@
     <!-- 时间滚动输出 level为 ERROR 日志 -->
     <appender name="logger"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>INFO</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
-        </filter>
+        <file>logs/runquickly/applogs.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <FileNamePattern>logs/runquickly/applogs.%d{yyyy-MM-dd}.log</FileNamePattern>
-            <MaxHistory>30</MaxHistory>
+            <MaxHistory>240</MaxHistory>
         </rollingPolicy>
         <encoder>
             <pattern>%date [%thread] %-5level %logger{80} - %msg%n%ex</pattern>
